@@ -34,11 +34,11 @@ qr.html              Losse, printvriendelijke pagina met alleen de QR-code
 404.html             GitHub Pages foutpagina
 css/styles.css        Alle styling + design tokens (kleuren, typografie)
 css/print.css         Printstijlen voor qr.html
-js/hero.js            Hero-animatie: een echte hockeystick-foto die uithaalt en de bal wegslaat, het logo klapt er bouncy in met confetti — herhaalt elke keer je terugscrolt naar boven
+js/hero.js            Hero-animatie: full-screen first-person "into the game"-sequence — een fotorealistisch avondveld vult de hero, je stick dribbelt de bal twee keer naar links en slaat hem het doel in, waarna het logo met confetti verschijnt boven de echte wedstrijdfoto's — herhaalt elke keer je terugscrolt naar boven
 js/i18n.js             NL/EN vertaalsysteem (NL is standaard); onthoudt de taalkeuze van de bezoeker
 js/main.js             Navigatie, formulier, fotogalerij, QR-render
 js/qrcode.min.js       Vendored QR-library (qrcodejs, MIT-licentie)
-assets/img/            Logo's, banner en de hockeystick-foto (officiële/gegenereerde clubassets)
+assets/img/            Logo's, banner, de hockeystick-foto en het POV-avondveld (pov-pitch.jpg) voor de hero-animatie
 assets/photos/         19 wedstrijdfoto's (Robert Janssen Fotografie), genaamd 1.jpg t/m 19.jpg
 assets/downloads/       Kant-en-klare QR-bestanden (SVG + PNG) voor drukwerk
 assets/favicon/         Favicons, gegenereerd uit het clublogo
