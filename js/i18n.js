@@ -130,6 +130,7 @@
       'footer.contact': 'Contact',
       'footer.copyrightPre': '© ',
       'footer.copyrightPost': ' Vrienden van AthenA. Onderdeel van Hockeyclub AthenA.',
+      'footer.videoCredit': 'Herovideo: \u00a9 Xavier Car\u00e9 / Wikimedia Commons / CC BY-SA 3.0 (bewerkt)',
 
       'print.title': 'Print QR — Vrienden van AthenA',
       'print.hint': 'Scan de code met je telefooncamera om de Vrienden-pagina van Hockeyclub AthenA te openen.',
@@ -259,6 +260,7 @@
       'footer.contact': 'Contact',
       'footer.copyrightPre': '© ',
       'footer.copyrightPost': ' Vrienden van AthenA. Part of Hockeyclub AthenA.',
+      'footer.videoCredit': 'Hero video: \u00a9 Xavier Car\u00e9 / Wikimedia Commons / CC BY-SA 3.0 (edited)',
 
       'print.title': 'Print QR — Vrienden van AthenA',
       'print.hint': 'Scan the code with your phone camera to open the Friends page of Hockeyclub AthenA.',

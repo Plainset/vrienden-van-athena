@@ -20,10 +20,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16.png">
 <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png">
 
-<link rel="preload" href="assets/photos/15.jpg" as="image">
-<link rel="preload" href="assets/photos/4.jpg" as="image">
-<link rel="preload" href="assets/photos/8.jpg" as="image">
-<link rel="preload" href="assets/photos/12.jpg" as="image">
+<link rel="preload" href="assets/video/hero-strike-poster.jpg" as="image">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -70,12 +67,12 @@
       <img class="hero-photo" src="assets/photos/10.jpg" alt="">
     </div>
     <div class="hero-photo-tint" aria-hidden="true"></div>
-    <div class="hero-film" id="heroFilm" aria-hidden="true">
-      <img class="hero-frame frame-ready" src="assets/photos/15.jpg" alt="">
-      <img class="hero-frame frame-carry" src="assets/photos/4.jpg" alt="">
-      <img class="hero-frame frame-strike" src="assets/photos/8.jpg" alt="">
-      <img class="hero-frame frame-release" src="assets/photos/12.jpg" alt="">
-    </div>
+    <!-- Continuous real match footage: one player sets up over the ball and
+         sweeps a pass — © Xavier Caré / Wikimedia Commons / CC BY-SA 3.0 (edited) -->
+    <video class="hero-film" id="heroFilm" muted playsinline preload="auto"
+           poster="assets/video/hero-strike-poster.jpg" aria-hidden="true" tabindex="-1">
+      <source src="assets/video/hero-strike.mp4" type="video/mp4">
+    </video>
     <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
     <div class="hero-vignette" aria-hidden="true"></div>
 
@@ -398,6 +395,7 @@
   </div>
   <div class="footer-bottom">
     <p><span data-i18n-html="footer.copyrightPre">&copy; </span><span id="year">2026</span><span data-i18n="footer.copyrightPost"> Vrienden van AthenA. Onderdeel van Hockeyclub AthenA.</span></p>
+    <p class="media-credit" data-i18n="footer.videoCredit">Herovideo: © Xavier Caré / Wikimedia Commons / CC BY-SA 3.0 (bewerkt)</p>
   </div>
 </footer>
 

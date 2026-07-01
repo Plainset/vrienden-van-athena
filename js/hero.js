@@ -1,24 +1,24 @@
 /*
-  Hero: "De wedstrijd in vier tellen" — a real-footage film edit.
+  Hero: one continuous take of real match footage.
 
-  Four frames of real match photography (Robert Janssen Fotografie, AthenA's
-  own men's team) play full-screen like a filmed title sequence: anticipation
-  over the ball -> the carry -> the strike (turf spray frozen mid-air) -> the
-  follow-through as the ball leaves frame. Hard cuts between frames, a slow
-  push-in on each — restrained, documentary-style camera work. The film then
-  fades into the existing ending: the ambient photo backdrop, the crest pop
-  and the rising headline.
-
-  Every pixel of the sequence is a real photograph of a real player — no
-  rendered stick, no synthetic ball, no particle effects in the game action.
+  A single live-action shot (© Xavier Caré / Wikimedia Commons / CC BY-SA 3.0,
+  trimmed and graded): a player walks up to the ball, sets himself, sweeps a
+  full pass with a deep follow-through, the ball exits frame and he settles —
+  at which point the film fades into the existing ending (ambient photo
+  backdrop, crest pop, rising headline). No cuts, no synthetic elements: the
+  entire sequence is genuine filmed field hockey.
 
   - Replays every time the hero scrolls back into view (cooldown-guarded).
-  - The whole film is driven by requestAnimationFrame timestamps (inline
-    styles, no CSS-clock animations), so it never desyncs in throttled tabs.
-  - Waits for all four frames to decode before playing; if any photo fails
-    to load, the film is skipped and the hero settles directly.
-  - Respects prefers-reduced-motion (static final state via CSS) and keeps
-    working without JS (.no-js shows the settled hero).
+  - The reveal starts just before the clip ends, during the player's settle,
+    so the handoff to the branding sequence feels continuous.
+  - The fade in/out runs on requestAnimationFrame timestamps with pause
+    semantics: leave the tab (or scroll away) mid-fade and it resumes where
+    it stopped instead of stranding a half-faded frame.
+  - Waits for the video to buffer before rolling; if it can't play (error or
+    a very slow connection), the hero settles directly and tries the film
+    again on the next scroll-return.
+  - Respects prefers-reduced-motion (static hero via CSS) and works without
+    JS (.no-js hides the film and shows the settled hero).
 */
 (function () {
   document.documentElement.classList.remove('no-js');
@@ -27,7 +27,7 @@
   var hero = document.querySelector('.hero');
   var canvas = document.getElementById('heroCanvas');
   var crest = document.getElementById('heroCrest');
-  var film = document.getElementById('heroFilm');
+  var film = document.getElementById('heroFilm'); // <video>
 
   if (!hero || !canvas) return;
 
@@ -65,53 +65,44 @@
 
   var W = 0, H = 0;
 
-  // ---- the film ----
-  // Each shot: which frame element, how long it holds, and the camera move
-  // (scale + drift as fractions of the frame size). Cuts between shots are
-  // hard cuts — like a real match edit.
-  var frames = film ? film.querySelectorAll('.hero-frame') : [];
-  var SHOTS = [
-    // 1. Anticipation: two players coiled over their sticks. Slow push-in.
-    { dur: 1300, s0: 1.03, s1: 1.08, x0: 0, x1: 0, ease: easeOutQuad },
-    // 2. The carry: ball glued to the blade mid-run. Camera tracks the run.
-    { dur: 1300, s0: 1.03, s1: 1.07, x0: 0.7, x1: -0.7, ease: easeOutQuad },
-    // 3. The strike: blade through the ball, spray frozen. Push toward contact.
-    { dur: 1400, s0: 1.04, s1: 1.11, x0: 0, x1: 0, ease: easeOutQuad },
-    // 4. Follow-through, ball gone: the camera eases back out — release.
-    { dur: 1100, s0: 1.09, s1: 1.02, x0: 0, x1: 0, ease: easeInOutQuad }
-  ];
-  var FADE_IN_MS = 240;   // film fades up from the dark page background
+  // ---- the film (a real continuous video clip) ----
+  var FADE_IN_MS = 240;   // film fades up from the page background
   var REVEAL_MS = 700;    // film fades out to the settled hero
-  var filmOK = film && frames.length === SHOTS.length;
+  var REVEAL_AT = 5.25;   // start the reveal during the player's settle (clip is ~5.8s)
 
-  // idle -> shot 0..3 -> reveal -> settled
+  // idle -> film -> reveal -> settled
   var phase = 'idle';
-  var shotIdx = 0;
   var phaseStart = 0;
   var revealFired = false;
   var lastPlay = -Infinity;
   var COOLDOWN = 1200;
 
-  // ---- assets: wait for every frame photo before rolling ----
+  var filmOK = !!film;
+  var videoReady = false;
+  var videoFailed = false;
   var pendingPlay = false;
-  var framesToLoad = 0;
-  var framesFailed = 0;
-  (function watchFrames() {
-    if (!filmOK) return;
-    for (var i = 0; i < frames.length; i++) {
-      var img = frames[i];
-      if (img.complete && img.naturalWidth > 0) continue;
-      if (img.complete) { framesFailed++; continue; }
-      framesToLoad++;
-      img.addEventListener('load', frameSettled);
-      img.addEventListener('error', function () { framesFailed++; frameSettled(); });
-    }
-  })();
-  function frameSettled() {
-    framesToLoad--;
-    if (pendingPlay && assetsReady()) play();
+  var watchdog = null;
+
+  if (film) {
+    film.muted = true; // belt-and-braces for programmatic autoplay
+    if (film.readyState >= 3) videoReady = true;
+    film.addEventListener('canplaythrough', function () {
+      videoReady = true;
+      if (pendingPlay) play();
+    });
+    // capture phase so <source> errors bubble here too
+    film.addEventListener('error', function () {
+      videoFailed = true;
+      if (pendingPlay) play();
+    }, true);
+    film.addEventListener('timeupdate', function () {
+      if (phase === 'film' && film.currentTime >= REVEAL_AT) beginReveal(performance.now());
+    });
+    // backstop in case timeupdate granularity skips REVEAL_AT
+    film.addEventListener('ended', function () {
+      if (phase === 'film') beginReveal(performance.now());
+    });
   }
-  function assetsReady() { return !filmOK || framesToLoad <= 0; }
 
   // ---- confetti (part of the existing crest ending) ----
   var confetti = [];
@@ -120,7 +111,6 @@
   var running = true;
   var rafId = null;
 
-  function easeOutQuad(x) { return 1 - (1 - x) * (1 - x); }
   function easeInOutQuad(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
   function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
 
@@ -181,20 +171,7 @@
     ctx.restore();
   }
 
-  function setFrameTransform(el, shot, p) {
-    var e = shot.ease(p);
-    var s = shot.s0 + (shot.s1 - shot.s0) * e;
-    var x = shot.x0 + (shot.x1 - shot.x0) * e;
-    el.style.transform = 'translate3d(' + x.toFixed(3) + '%, 0, 0) scale(' + s.toFixed(4) + ')';
-  }
-
-  function showOnly(idx) {
-    for (var i = 0; i < frames.length; i++) {
-      frames[i].style.opacity = i === idx ? '1' : '0';
-    }
-  }
-
-  function fireReveal(now) {
+  function fireReveal() {
     if (revealFired) return;
     revealFired = true;
     hero.classList.add('hero-anim');
@@ -203,40 +180,33 @@
     spawnConfetti(t.x, t.y, lowFi ? 14 : 26);
   }
 
+  function beginReveal(now) {
+    phase = 'reveal';
+    phaseStart = now;
+    fireReveal();
+  }
+
+  function settle() {
+    phase = 'settled';
+    if (film) {
+      film.style.opacity = '0';
+      film.pause();
+    }
+    fireReveal();
+  }
+
   function renderFilm(now) {
-    if (phase === 'idle' || phase === 'settled') return;
+    if (phase === 'idle' || phase === 'settled' || !film) return;
     var elapsed = now - phaseStart;
 
-    if (phase === 'shot') {
-      var shot = SHOTS[shotIdx];
-      if (elapsed >= shot.dur) {
-        // hard cut to the next shot — or hand off to the reveal
-        if (shotIdx < SHOTS.length - 1) {
-          shotIdx++;
-          phaseStart = now;
-          showOnly(shotIdx);
-          setFrameTransform(frames[shotIdx], SHOTS[shotIdx], 0);
-        } else {
-          phase = 'reveal';
-          phaseStart = now;
-          fireReveal(now);
-        }
-        return;
-      }
-      var p = clamp01(elapsed / shot.dur);
-      setFrameTransform(frames[shotIdx], shot, p);
-      // the film fades up from the dark page background on the first shot
-      if (shotIdx === 0) {
-        film.style.opacity = clamp01(elapsed / FADE_IN_MS).toFixed(3);
-      }
+    if (phase === 'film') {
+      // fade the film up from the page background, then let it run
+      film.style.opacity = clamp01(elapsed / FADE_IN_MS).toFixed(3);
     } else if (phase === 'reveal') {
       var q = clamp01(elapsed / REVEAL_MS);
-      // last frame holds its settled pose while the film fades out
+      // the clip keeps playing its last settling second underneath the fade
       film.style.opacity = (1 - easeInOutQuad(q)).toFixed(3);
-      if (q >= 1) {
-        phase = 'settled';
-        film.style.opacity = '0';
-      }
+      if (q >= 1) settle();
     }
   }
 
@@ -253,9 +223,8 @@
     }
 
     // rAF stops in hidden tabs / off-screen heroes; treat big gaps as a pause
-    // (shift the phase clock) so the film resumes instead of skipping ahead
-    // with a half-finished fade stranded on screen.
-    if (lastTs && ts - lastTs > 250 && (phase === 'shot' || phase === 'reveal')) {
+    // (shift the phase clock) so fades resume instead of skipping ahead.
+    if (lastTs && ts - lastTs > 250 && (phase === 'film' || phase === 'reveal')) {
       phaseStart += ts - lastTs;
     }
     lastTs = ts;
@@ -270,33 +239,60 @@
     var now = performance.now();
     if (now - lastPlay < COOLDOWN) return;
     if (phase !== 'idle' && phase !== 'settled') return;
-    if (!assetsReady()) { pendingPlay = true; return; } // roll once the photos arrive
+
+    // no film, or the video can't play -> settle straight into the branding
+    if (!filmOK || videoFailed) {
+      lastPlay = now;
+      resetReveal();
+      settle();
+      return;
+    }
+
+    if (!videoReady) {
+      // roll once the clip has buffered; if that takes too long, settle now
+      // and let the next scroll-return try the film again
+      pendingPlay = true;
+      if (!watchdog) {
+        watchdog = setTimeout(function () {
+          watchdog = null;
+          if (pendingPlay && !videoReady) {
+            pendingPlay = false;
+            resetReveal();
+            settle();
+          }
+        }, 4000);
+      }
+      return;
+    }
     pendingPlay = false;
+    if (watchdog) { clearTimeout(watchdog); watchdog = null; }
     lastPlay = now;
 
+    resetReveal();
+
+    phase = 'film';
+    phaseStart = now;
+    film.style.opacity = '0';
+    try { film.currentTime = 0; } catch (e) { /* not seekable yet */ }
+    var p = film.play();
+    if (p && p.catch) {
+      p.catch(function () {
+        // autoplay refused or decode hiccup — settle rather than hang dark
+        videoFailed = true;
+        settle();
+      });
+    }
+
+    if (!rafId) rafId = requestAnimationFrame(frame);
+  }
+
+  function resetReveal() {
     hero.classList.remove('hero-anim');
     if (crest) crest.classList.remove('crest-pop');
     // force reflow so the CSS animations restart on next class add
     // eslint-disable-next-line no-unused-expressions
     void hero.offsetWidth;
     revealFired = false;
-
-    // any frame photo missing -> skip the film, settle immediately
-    if (!filmOK || framesFailed > 0) {
-      if (film) film.style.opacity = '0';
-      phase = 'settled';
-      fireReveal(now);
-      return;
-    }
-
-    phase = 'shot';
-    shotIdx = 0;
-    phaseStart = now;
-    film.style.opacity = '0';
-    showOnly(0);
-    setFrameTransform(frames[0], SHOTS[0], 0);
-
-    if (!rafId) rafId = requestAnimationFrame(frame);
   }
 
   resize();
@@ -312,6 +308,12 @@
         running = ratio > 0;
         if (running && !rafId) rafId = requestAnimationFrame(frame);
         if (!running && rafId) { cancelAnimationFrame(rafId); rafId = null; }
+
+        // pause the clip while the hero is off-screen, resume where it left off
+        if (film && phase === 'film') {
+          if (!running && !film.paused) film.pause();
+          if (running && film.paused) { var pr = film.play(); if (pr && pr.catch) pr.catch(function () {}); }
+        }
 
         var visibleEnough = ratio >= 0.45;
         if (visibleEnough && !wasVisible) play();
