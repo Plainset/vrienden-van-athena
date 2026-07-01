@@ -31,6 +31,21 @@
   var ctx = canvas.getContext('2d');
   if (!ctx) return;
 
+  // ---- crossfading real match-photo backdrop (Ken Burns loop) ----
+  (function initHeroPhotos() {
+    var photos = document.querySelectorAll('.hero-photo');
+    if (photos.length < 2) return;
+    var idx = 0;
+    setInterval(function () {
+      var current = photos[idx];
+      idx = (idx + 1) % photos.length;
+      var next = photos[idx];
+      current.classList.remove('is-active');
+      void next.offsetWidth; // reflow so the Ken Burns animation restarts each cycle
+      next.classList.add('is-active');
+    }, 4500);
+  })();
+
   var isSmall = window.innerWidth < 768;
   var isLowPower = (navigator.hardwareConcurrency || 8) <= 4;
   var lowFi = isSmall || isLowPower;
