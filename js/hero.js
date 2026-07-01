@@ -56,11 +56,14 @@
   var W = 0, H = 0;
   var dots = [];
   var confetti = [];
+  var dust = [];
+  var tipTrail = [];
   var running = true;
   var rafId = null;
   var t0 = null;
 
   var CONFETTI_COLORS = ['#E11F2B', '#5FB8BE', '#ffffff', '#8fd8dc'];
+  var DUST_COLORS = ['#dfe3e6', '#b9c0c4', '#6f7a52', '#8a9468'];
 
   // ---- real hockey stick image ----
   var stickImg = new Image();
@@ -93,6 +96,9 @@
   var BACKSWING_MS = 130;
   var STRIKE_MS = 150;
   var FLIGHT_MS = 340;
+  var BALL_R = lowFi ? 12 : 16;
+  var shakeStart = -Infinity;
+  var SHAKE_MS = 200;
 
   function easeInOutQuad(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
   function easeInQuad(x) { return x * x; }
@@ -108,10 +114,13 @@
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    pivot.x = W * 0.82;
-    pivot.y = H * 0.92;
-    stickLen = Math.max(150, Math.min(260, W * 0.22));
-    stickDrawLen = stickLen * 1.5;
+    pivot.x = W * 0.76;
+    pivot.y = H * 1.03;
+    stickLen = Math.max(220, Math.min(460, W * 0.34));
+    stickDrawLen = stickLen * 1.85;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
   }
 
   function initDots() {
@@ -210,6 +219,10 @@
 
     ctx.save();
     ctx.globalAlpha = alpha;
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetX = 7;
+    ctx.shadowOffsetY = 12;
     ctx.translate(pivot.x, pivot.y);
     ctx.rotate(angle);
     ctx.rotate(IMG_CORRECTION);
@@ -218,20 +231,52 @@
     ctx.restore();
   }
 
+  function drawSwoosh() {
+    if (tipTrail.length < 2) return;
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (var i = 1; i < tipTrail.length; i++) {
+      var p0 = tipTrail[i - 1];
+      var p1 = tipTrail[i];
+      var frac = i / tipTrail.length;
+      ctx.strokeStyle = 'rgba(255,255,255,' + (frac * 0.45).toFixed(3) + ')';
+      ctx.lineWidth = 2 + frac * 10;
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawBallAt(x, y, r) {
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
-    ctx.shadowBlur = r * 1.2;
-    ctx.shadowOffsetY = r * 0.4;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.ellipse(x, y + r * 0.85, r * 1.1, r * 0.32, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    var grad = ctx.createRadialGradient(x - r * 0.4, y - r * 0.45, r * 0.1, x, y, r * 1.05);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.55, '#f1f3f4');
+    grad.addColorStop(1, '#c7ccd0');
+    ctx.beginPath();
+    ctx.fillStyle = grad;
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowBlur = r * 1.1;
+    ctx.shadowOffsetY = r * 0.35;
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowColor = 'transparent';
-    ctx.strokeStyle = 'rgba(7,28,107,0.4)';
-    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = 'rgba(7,28,107,0.3)';
+    ctx.lineWidth = Math.max(0.8, r * 0.07);
     ctx.beginPath();
-    ctx.arc(x, y, r, 0.3, 2.6);
+    ctx.arc(x, y, r * 0.96, 0.35, 2.55);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.96, 3.45, 5.3);
     ctx.stroke();
     ctx.restore();
   }
@@ -275,6 +320,41 @@
     ctx.restore();
   }
 
+  function spawnDust(x, y, count) {
+    for (var i = 0; i < count; i++) {
+      var ang = -Math.PI / 2 + (Math.random() - 0.5) * 2.0;
+      var speed = 1.1 + Math.random() * 2.8;
+      dust.push({
+        x: x, y: y,
+        vx: Math.cos(ang) * speed,
+        vy: Math.sin(ang) * speed,
+        g: 0.13,
+        life: 1,
+        decay: 0.028 + Math.random() * 0.02,
+        size: 1.4 + Math.random() * 2.4,
+        color: DUST_COLORS[i % DUST_COLORS.length]
+      });
+    }
+  }
+
+  function drawDust() {
+    ctx.save();
+    for (var i = dust.length - 1; i >= 0; i--) {
+      var d = dust[i];
+      d.vy += d.g;
+      d.x += d.vx;
+      d.y += d.vy;
+      d.life -= d.decay;
+      if (d.life <= 0) { dust.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.max(0, d.life) * 0.75;
+      ctx.beginPath();
+      ctx.fillStyle = d.color;
+      ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   function drawFlightBall(elapsed) {
     var p = Math.min(1, elapsed / FLIGHT_MS);
     var e = easeOutCubic(p);
@@ -282,22 +362,23 @@
     var x = start.x + (target.x - start.x) * e;
     var arc = Math.sin(p * Math.PI) * -H * 0.06;
     var y = start.y + (target.y - start.y) * e + arc;
+    var r = BALL_R * (1 - p * 0.55); // shrinks slightly as it "travels away" toward the crest
 
-    ballTrail.push({ x: x, y: y });
+    ballTrail.push({ x: x, y: y, r: r });
     if (ballTrail.length > 10) ballTrail.shift();
 
     ctx.save();
     for (var i = 0; i < ballTrail.length; i++) {
       var tpos = ballTrail[i];
-      ctx.globalAlpha = (i / ballTrail.length) * 0.35;
+      ctx.globalAlpha = (i / ballTrail.length) * 0.4;
       ctx.beginPath();
       ctx.fillStyle = '#ffffff';
-      ctx.arc(tpos.x, tpos.y, 5, 0, Math.PI * 2);
+      ctx.arc(tpos.x, tpos.y, tpos.r * 0.7, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
     ctx.restore();
-    drawBallAt(x, y, 6);
+    drawBallAt(x, y, r);
 
     if (p >= 1) {
       phase = 'settled';
@@ -318,15 +399,25 @@
     } else if (phase === 'strike' && elapsed >= STRIKE_MS) {
       phase = 'flight'; phaseStart = now; elapsed = 0;
       var cp = contactPoint(STRIKE_ANGLE, 0.92);
-      spawnConfetti(cp.x, cp.y, lowFi ? 5 : 9);
+      spawnDust(cp.x, cp.y, lowFi ? 8 : 16);
+      shakeStart = now;
     }
 
     var angle = stickAngleForPhase(elapsed);
+
+    if (phase === 'backswing' || phase === 'strike') {
+      var tip = contactPoint(angle, 1.0);
+      tipTrail.push({ x: tip.x, y: tip.y });
+      if (tipTrail.length > 8) tipTrail.shift();
+    } else if (tipTrail.length) {
+      tipTrail.length = 0;
+    }
+    drawSwoosh();
     drawStickImage(angle);
 
     if (phase === 'address' || phase === 'backswing' || phase === 'strike') {
       var restBall = contactPoint(STRIKE_ANGLE, 0.92);
-      drawBallAt(restBall.x, restBall.y, 6);
+      drawBallAt(restBall.x, restBall.y, BALL_R);
     } else if (phase === 'flight') {
       drawFlightBall(elapsed);
     }
@@ -338,10 +429,24 @@
     var t = ts - t0;
 
     ctx.clearRect(0, 0, W, H);
+
+    var shakeElapsed = ts - shakeStart;
+    var shaking = shakeElapsed >= 0 && shakeElapsed < SHAKE_MS;
+    var shakeX = 0, shakeY = 0;
+    if (shaking) {
+      var decay = 1 - shakeElapsed / SHAKE_MS;
+      shakeX = (Math.random() - 0.5) * 7 * decay;
+      shakeY = (Math.random() - 0.5) * 7 * decay;
+    }
+
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
     drawTurf(t);
     drawDots();
     if (phase !== 'settled') tickSequence(ts);
+    drawDust();
     drawConfetti();
+    ctx.restore();
 
     rafId = requestAnimationFrame(frame);
   }
@@ -361,6 +466,8 @@
     target = getTarget();
     phase = 'address';
     phaseStart = performance.now();
+    tipTrail.length = 0;
+    shakeStart = -Infinity;
 
     if (!rafId) rafId = requestAnimationFrame(frame);
   }

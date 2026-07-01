@@ -199,8 +199,8 @@ button{ font-family: inherit; }
 .hero-photo-tint{
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(6,9,12,.78) 0%, rgba(6,9,12,.45) 55%, rgba(6,9,12,.2) 100%),
-    rgba(6,9,12,.5);
+    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(6,9,12,.5) 0%, rgba(6,9,12,.24) 55%, rgba(6,9,12,.08) 100%),
+    rgba(6,9,12,.22);
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce){
@@ -209,7 +209,7 @@ button{ font-family: inherit; }
 .hero-canvas{ position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero-vignette{
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(10,13,17,.25) 0%, rgba(10,13,17,.15) 40%, rgba(10,13,17,.85) 100%);
+  background: linear-gradient(180deg, rgba(10,13,17,.12) 0%, rgba(10,13,17,.05) 40%, rgba(10,13,17,.6) 100%);
   pointer-events: none;
 }
 .hero-inner{ position: relative; z-index: 2; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -219,7 +219,7 @@ button{ font-family: inherit; }
   letter-spacing: .14em; text-transform: uppercase; color: var(--teal-deep);
   margin-bottom: .9rem;
 }
-.eyebrow-light{ color: var(--teal); }
+.eyebrow-light{ color: var(--teal); text-shadow: 0 1px 12px rgba(0,0,0,.55); }
 
 .hero-crest{
   width: min(420px, 70vw); margin-bottom: 1.6rem;
@@ -247,11 +247,13 @@ button{ font-family: inherit; }
 .hero-title{
   color: #fff; font-size: clamp(2.4rem, 6vw, 4.4rem); letter-spacing: -.02em;
   opacity: 0; transform: translateY(18px);
+  text-shadow: 0 4px 26px rgba(0,0,0,.5), 0 1px 4px rgba(0,0,0,.7);
 }
 .hero-sub{
-  color: rgba(255,255,255,.78); font-size: clamp(1.05rem, 2vw, 1.25rem);
+  color: rgba(255,255,255,.92); font-size: clamp(1.05rem, 2vw, 1.25rem);
   max-width: 640px; margin-bottom: 2.1rem;
   opacity: 0; transform: translateY(18px);
+  text-shadow: 0 2px 16px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.6);
 }
 .hero-ctas{ display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; opacity: 0; transform: translateY(18px); }
 
