@@ -7,9 +7,14 @@
 
   /* ---------- Sticky header state ---------- */
   var header = document.getElementById('siteHeader');
+  var heroRunway = document.querySelector('.hero-scroll');
   function onScroll() {
     if (!header) return;
-    if (window.scrollY > 40) header.classList.add('is-scrolled');
+    // stay transparent (white text) for the whole pinned hero runway; flip
+    // once the light content sections actually reach the header
+    var threshold = 40;
+    if (heroRunway) threshold = Math.max(40, heroRunway.offsetHeight - window.innerHeight * 0.12 - 68);
+    if (window.scrollY > threshold) header.classList.add('is-scrolled');
     else header.classList.remove('is-scrolled');
   }
   onScroll();
