@@ -35,10 +35,11 @@
 
   /* ---------- Photo grid: probe assets/photos/1.jpg ... 19.jpg ---------- */
   var PHOTO_COUNT = 19;
-  var PLACEHOLDER_LABELS = [
-    'Jeugdopleiding', 'Teamspirit', 'Overgangsklasse', 'Community',
-    'Vrijwilligers', 'Wedstrijddag', 'Trainersteam', 'Clubgevoel'
-  ];
+
+  function placeholderLabel(i) {
+    var key = 'gallery.placeholder.' + i;
+    return window.i18n ? window.i18n.t(key) : key;
+  }
 
   function loadPhotoGrid() {
     var grid = document.getElementById('photoGrid');
@@ -88,13 +89,21 @@
       var tile = document.createElement('div');
       tile.className = 'photo-tile placeholder';
       var span = document.createElement('span');
-      span.textContent = PLACEHOLDER_LABELS[i % PLACEHOLDER_LABELS.length];
+      span.setAttribute('data-placeholder-index', i);
+      span.textContent = placeholderLabel(i);
       tile.appendChild(span);
       grid.appendChild(tile);
     }
   }
 
   loadPhotoGrid();
+
+  // Re-label placeholder tiles (if shown) when the language changes.
+  document.addEventListener('languagechange', function () {
+    document.querySelectorAll('[data-placeholder-index]').forEach(function (span) {
+      span.textContent = placeholderLabel(Number(span.getAttribute('data-placeholder-index')));
+    });
+  });
 
   /* ---------- Sponsor tier -> form prefill ---------- */
   var pakketSelect = document.getElementById('fldPakket');
@@ -120,28 +129,31 @@
       var actionUrl = form.getAttribute('action') || '';
       var endpointConfigured = actionUrl.indexOf(PLACEHOLDER_ACTION_MARKER) === -1;
 
+      var i18n = window.i18n;
+      var tr = function (key) { return i18n ? i18n.t(key) : key; };
+
       if (!endpointConfigured) {
         // Formspree not set up yet: build a mailto with the entered details so the
         // enquiry still reaches sponsors@hcathena.nl.
         evt.preventDefault();
         var data = new FormData(form);
         var body =
-          'Naam: ' + (data.get('naam') || '') + '\n' +
-          'Bedrijf: ' + (data.get('bedrijf') || '') + '\n' +
-          'E-mail: ' + (data.get('email') || '') + '\n' +
-          'Telefoon: ' + (data.get('telefoon') || '') + '\n' +
-          'Interesse: ' + (data.get('pakket') || '') + '\n\n' +
+          tr('form.mailtoName') + ': ' + (data.get('naam') || '') + '\n' +
+          tr('form.mailtoCompany') + ': ' + (data.get('bedrijf') || '') + '\n' +
+          tr('form.mailtoEmail') + ': ' + (data.get('email') || '') + '\n' +
+          tr('form.mailtoPhone') + ': ' + (data.get('telefoon') || '') + '\n' +
+          tr('form.mailtoInterest') + ': ' + (data.get('pakket') || '') + '\n\n' +
           (data.get('bericht') || '');
         var mailto = 'mailto:sponsors@hcathena.nl' +
           '?subject=' + encodeURIComponent('Sponsoraanvraag Vrienden van AthenA') +
           '&body=' + encodeURIComponent(body);
         window.location.href = mailto;
-        setStatus('We openen je e-mailprogramma zodat je de aanvraag direct kunt versturen.', 'is-success');
+        setStatus(tr('form.successMailto'), 'is-success');
         return;
       }
 
       evt.preventDefault();
-      setStatus('Versturen…', '');
+      setStatus(tr('form.sending'), '');
       fetch(actionUrl, {
         method: 'POST',
         body: new FormData(form),
@@ -149,12 +161,12 @@
       }).then(function (res) {
         if (res.ok) {
           form.reset();
-          setStatus('Bedankt! We nemen zo snel mogelijk contact met je op.', 'is-success');
+          setStatus(tr('form.successFormspree'), 'is-success');
         } else {
           throw new Error('submit-failed');
         }
       }).catch(function () {
-        setStatus('Versturen is niet gelukt. Mail ons gerust direct via sponsors@hcathena.nl.', 'is-error');
+        setStatus(tr('form.error'), 'is-error');
       });
     });
   }

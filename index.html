@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vrienden van AthenA — Sponsornetwerk van Hockeyclub AthenA</title>
-<meta name="description" content="Word vriend of sponsor van Hockeyclub AthenA. Samen investeren we in goede jeugdtrainers en de toekomst van een van de snelst groeiende hockeyclubs van Nederland.">
+<title data-i18n="meta.title">Vrienden van AthenA — Sponsornetwerk van Hockeyclub AthenA</title>
+<meta name="description" content="Word vriend of sponsor van Hockeyclub AthenA. Samen investeren we in goede jeugdtrainers en de toekomst van een van de snelst groeiende hockeyclubs van Nederland." data-i18n-attr="content:meta.description">
 <meta name="theme-color" content="#0A0D11">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Vrienden van AthenA">
-<meta property="og:description" content="Samen investeren we in de toekomst van Hockeyclub AthenA.">
+<meta property="og:description" content="Samen investeren we in de toekomst van Hockeyclub AthenA." data-i18n-attr="content:meta.ogDescription">
 <meta property="og:image" content="assets/img/vriendenvanathena-banner.png">
 <meta property="og:url" content="https://vriendenvanathena.nl">
 <meta name="twitter:card" content="summary_large_image">
@@ -24,7 +24,7 @@
 </head>
 <body>
 
-<a class="skip-link" href="#main">Ga naar inhoud</a>
+<a class="skip-link" href="#main" data-i18n="a11y.skipLink">Ga naar inhoud</a>
 
 <header class="site-header" id="siteHeader">
   <div class="container header-inner">
@@ -33,19 +33,23 @@
       <span class="brand-name">Vrienden<em>van</em>AthenA</span>
     </a>
 
-    <nav class="main-nav" id="mainNav" aria-label="Hoofdnavigatie">
+    <nav class="main-nav" id="mainNav" aria-label="Hoofdnavigatie" data-i18n-attr="aria-label:a11y.mainNav">
       <ul>
-        <li><a href="#over">Over ons</a></li>
-        <li><a href="#cijfers">In cijfers</a></li>
-        <li><a href="#pakketten">Sponsorpakketten</a></li>
-        <li><a href="#beeld">In beeld</a></li>
-        <li><a href="#sponsorkit">Sponsorkit</a></li>
+        <li><a href="#over" data-i18n="nav.over">Over ons</a></li>
+        <li><a href="#cijfers" data-i18n="nav.cijfers">In cijfers</a></li>
+        <li><a href="#pakketten" data-i18n="nav.pakketten">Sponsorpakketten</a></li>
+        <li><a href="#beeld" data-i18n="nav.beeld">In beeld</a></li>
+        <li><a href="#sponsorkit" data-i18n="nav.sponsorkit">Sponsorkit</a></li>
       </ul>
     </nav>
 
     <div class="header-actions">
-      <a class="btn btn-primary btn-sm" href="#contact">Word vriend</a>
-      <button class="nav-toggle" id="navToggle" aria-controls="mainNav" aria-expanded="false" aria-label="Menu openen">
+      <div class="lang-toggle" role="group" aria-label="Taal / Language">
+        <button type="button" class="lang-btn is-active" data-lang="nl">NL</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <a class="btn btn-primary btn-sm" href="#contact" data-i18n="nav.cta">Word vriend</a>
+      <button class="nav-toggle" id="navToggle" aria-controls="mainNav" aria-expanded="false" aria-label="Menu openen" data-i18n-attr="aria-label:a11y.menuOpen">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -62,7 +66,7 @@
     <div class="container hero-inner">
       <p class="eyebrow eyebrow-light">Vrienden van AthenA</p>
 
-      <div class="hero-crest" id="heroCrest" role="img" aria-label="AthenA logo">
+      <div class="hero-crest" id="heroCrest" role="img" aria-label="AthenA logo" data-i18n-attr="aria-label:a11y.crestLabel">
         <svg class="crest-svg" viewBox="0 0 689.3 257.6" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
           <style>.st0{fill:#FFFFFF;}</style>
           <g id="crestMark" class="crest-mark">
@@ -125,16 +129,16 @@
         </svg>
       </div>
 
-      <h1 class="hero-title">Vrienden maken<br>het verschil.</h1>
-      <p class="hero-sub">Samen investeren we in de toekomst van Hockeyclub AthenA — op en naast het veld.</p>
+      <h1 class="hero-title" data-i18n-html="hero.title">Vrienden maken<br>het verschil.</h1>
+      <p class="hero-sub" data-i18n="hero.sub">Samen investeren we in de toekomst van Hockeyclub AthenA — op en naast het veld.</p>
 
       <div class="hero-ctas">
-        <a class="btn btn-primary btn-lg" href="#contact">Word vriend van AthenA</a>
-        <a class="btn btn-ghost btn-lg" href="#over">Ontdek waarom</a>
+        <a class="btn btn-primary btn-lg" href="#contact" data-i18n="hero.ctaPrimary">Word vriend van AthenA</a>
+        <a class="btn btn-ghost btn-lg" href="#over" data-i18n="hero.ctaSecondary">Ontdek waarom</a>
       </div>
     </div>
 
-    <a class="scroll-cue" href="#over" aria-label="Scroll naar de volgende sectie">
+    <a class="scroll-cue" href="#over" aria-label="Scroll naar de volgende sectie" data-i18n-attr="aria-label:a11y.scrollCue">
       <span></span>
     </a>
   </section>
@@ -142,15 +146,15 @@
   <!-- ============ OVER ONS ============ -->
   <section class="section" id="over">
     <div class="container narrow">
-      <p class="eyebrow">Waarom AthenA</p>
-      <h2>Een jonge club met grote ambities</h2>
+      <p class="eyebrow" data-i18n="about.eyebrow">Waarom AthenA</p>
+      <h2 data-i18n="about.heading">Een jonge club met grote ambities</h2>
 
       <div class="prose">
-        <p>AthenA is, zoals je waarschijnlijk al weet, in 2004 opgericht en in korte tijd uitgegroeid tot de achtste hockeyclub van Nederland qua ledenaantal. Met zowel Dames 1 als Heren 1 in de Overgangsklasse is dat een resultaat waar we als jonge club trots op mogen zijn. Tegelijkertijd zien we nog volop potentieel voor verdere groei en ontwikkeling. Een belangrijk speerpunt daarbij is het aantrekken en behouden van goede (jeugd)trainers. Om hierin structureel te kunnen investeren, is de steun van betrokken sponsoren onmisbaar.</p>
+        <p data-i18n-html="about.paragraph1">AthenA is, zoals je waarschijnlijk al weet, in 2004 opgericht en in korte tijd uitgegroeid tot de achtste hockeyclub van Nederland qua ledenaantal. Met zowel Dames 1 als Heren 1 in de Overgangsklasse is dat een resultaat waar we als jonge club trots op mogen zijn. Tegelijkertijd zien we nog volop potentieel voor verdere groei en ontwikkeling. Een belangrijk speerpunt daarbij is het aantrekken en behouden van goede (jeugd)trainers. Om hierin structureel te kunnen investeren, is de steun van betrokken sponsoren onmisbaar.</p>
 
-        <p>Als vriend van AthenA maak je deel uit van een ondernemend netwerk. Minstens één keer per jaar ontmoet je elkaar tijdens de inspirerende en gezellige <em>&ldquo;Vrienden van AthenA&rdquo;-avond</em>, met een interessante spreker en volop gelegenheid om te netwerken. Ook door het jaar heen weten vrienden en Atheners elkaar te vinden, langs de velden, bij activiteiten en daarbuiten.</p>
+        <p data-i18n-html="about.paragraph2">Als vriend van AthenA maak je deel uit van een ondernemend netwerk. Minstens één keer per jaar ontmoet je elkaar tijdens de inspirerende en gezellige <em>&ldquo;Vrienden van AthenA&rdquo;-avond</em>, met een interessante spreker en volop gelegenheid om te netwerken. Ook door het jaar heen weten vrienden en Atheners elkaar te vinden, langs de velden, bij activiteiten en daarbuiten.</p>
 
-        <p class="prose-lead">Samen bouwen we aan de toekomst van onze club.</p>
+        <p class="prose-lead" data-i18n="about.lead">Samen bouwen we aan de toekomst van onze club.</p>
       </div>
     </div>
   </section>
@@ -161,19 +165,19 @@
       <div class="stat-grid">
         <div class="stat">
           <span class="stat-number">2004</span>
-          <span class="stat-label">Opgericht</span>
+          <span class="stat-label" data-i18n="stats.founded">Opgericht</span>
         </div>
         <div class="stat">
-          <span class="stat-number">8<sup>e</sup></span>
-          <span class="stat-label">Grootste hockeyclub van Nederland</span>
+          <span class="stat-number" data-i18n-html="stats.rankNumber">8<sup>e</sup></span>
+          <span class="stat-label" data-i18n="stats.rankLabel">Grootste hockeyclub van Nederland</span>
         </div>
         <div class="stat">
           <span class="stat-number">2</span>
-          <span class="stat-label">Vlaggenschepen in de Overgangsklasse</span>
+          <span class="stat-label" data-i18n="stats.flagship">Vlaggenschepen in de Overgangsklasse</span>
         </div>
         <div class="stat">
           <span class="stat-number">100%</span>
-          <span class="stat-label">Gedreven door vrijwilligers &amp; sponsoren</span>
+          <span class="stat-label" data-i18n="stats.driven">Gedreven door vrijwilligers &amp; sponsoren</span>
         </div>
       </div>
     </div>
@@ -183,56 +187,56 @@
   <!-- CLIENT: pas pakketnamen, prijzen en voordelen hieronder aan naar wens -->
   <section class="section" id="pakketten">
     <div class="container">
-      <p class="eyebrow">Sponsorpakketten</p>
-      <h2>Kies hoe jij AthenA verder helpt</h2>
-      <p class="section-intro">Elk pakket is een investering in de sportieve en persoonlijke ontwikkeling van onze leden — van de jongste jeugd tot Dames 1 en Heren 1. Onderstaande indeling is een startpunt; we denken graag mee over maatwerk.</p>
+      <p class="eyebrow" data-i18n="tiers.eyebrow">Sponsorpakketten</p>
+      <h2 data-i18n="tiers.heading">Kies hoe jij AthenA verder helpt</h2>
+      <p class="section-intro" data-i18n="tiers.intro">Elk pakket is een investering in de sportieve en persoonlijke ontwikkeling van onze leden — van de jongste jeugd tot Dames 1 en Heren 1. Onderstaande indeling is een startpunt; we denken graag mee over maatwerk.</p>
 
       <div class="tier-grid">
 
         <article class="tier-card tier-featured" data-pakket="Hoofdsponsor">
-          <p class="tier-badge">Meeste impact</p>
-          <h3>Hoofdsponsor</h3>
-          <p class="tier-price">Op aanvraag</p>
+          <p class="tier-badge" data-i18n="tiers.badge">Meeste impact</p>
+          <h3 data-i18n="tiers.main.name">Hoofdsponsor</h3>
+          <p class="tier-price" data-i18n="tiers.price">Op aanvraag</p>
           <ul class="tier-list">
-            <li>Logo op tenue &amp; velddoek</li>
-            <li>Prominente vermelding op website en bij evenementen</li>
-            <li>Uitnodiging Vrienden-avond voor meerdere personen</li>
-            <li>Persoonlijk relatiebeheer</li>
+            <li data-i18n="tiers.main.b1">Logo op tenue &amp; velddoek</li>
+            <li data-i18n="tiers.main.b2">Prominente vermelding op website en bij evenementen</li>
+            <li data-i18n="tiers.main.b3">Uitnodiging Vrienden-avond voor meerdere personen</li>
+            <li data-i18n="tiers.main.b4">Persoonlijk relatiebeheer</li>
           </ul>
-          <a class="btn btn-primary btn-block" href="#contact" data-pakket="Hoofdsponsor">Meer weten</a>
+          <a class="btn btn-primary btn-block" href="#contact" data-pakket="Hoofdsponsor" data-i18n="tiers.cta">Meer weten</a>
         </article>
 
         <article class="tier-card" data-pakket="Goud">
-          <h3>Goud</h3>
-          <p class="tier-price">Op aanvraag</p>
+          <h3 data-i18n="tiers.gold.name">Goud</h3>
+          <p class="tier-price" data-i18n="tiers.price">Op aanvraag</p>
           <ul class="tier-list">
-            <li>Logo op sponsorbord en website</li>
-            <li>Uitnodiging Vrienden-avond (2 personen)</li>
-            <li>Vermelding in de nieuwsbrief</li>
+            <li data-i18n="tiers.gold.b1">Logo op sponsorbord en website</li>
+            <li data-i18n="tiers.gold.b2">Uitnodiging Vrienden-avond (2 personen)</li>
+            <li data-i18n="tiers.gold.b3">Vermelding in de nieuwsbrief</li>
           </ul>
-          <a class="btn btn-outline btn-block" href="#contact" data-pakket="Goud">Meer weten</a>
+          <a class="btn btn-outline btn-block" href="#contact" data-pakket="Goud" data-i18n="tiers.cta">Meer weten</a>
         </article>
 
         <article class="tier-card" data-pakket="Zilver">
-          <h3>Zilver</h3>
-          <p class="tier-price">Op aanvraag</p>
+          <h3 data-i18n="tiers.silver.name">Zilver</h3>
+          <p class="tier-price" data-i18n="tiers.price">Op aanvraag</p>
           <ul class="tier-list">
-            <li>Logo op de website</li>
-            <li>Uitnodiging Vrienden-avond (1 persoon)</li>
-            <li>Vermelding in de nieuwsbrief</li>
+            <li data-i18n="tiers.silver.b1">Logo op de website</li>
+            <li data-i18n="tiers.silver.b2">Uitnodiging Vrienden-avond (1 persoon)</li>
+            <li data-i18n="tiers.silver.b3">Vermelding in de nieuwsbrief</li>
           </ul>
-          <a class="btn btn-outline btn-block" href="#contact" data-pakket="Zilver">Meer weten</a>
+          <a class="btn btn-outline btn-block" href="#contact" data-pakket="Zilver" data-i18n="tiers.cta">Meer weten</a>
         </article>
 
         <article class="tier-card" data-pakket="Brons / Vriend">
-          <h3>Brons &amp; Vriend</h3>
-          <p class="tier-price">Op aanvraag</p>
+          <h3 data-i18n="tiers.bronze.name">Brons &amp; Vriend</h3>
+          <p class="tier-price" data-i18n="tiers.price">Op aanvraag</p>
           <ul class="tier-list">
-            <li>Naamsvermelding op de Vriendenmuur</li>
-            <li>Uitnodiging Vrienden-avond</li>
-            <li>Je steunt direct de jeugdtrainers</li>
+            <li data-i18n="tiers.bronze.b1">Naamsvermelding op de Vriendenmuur</li>
+            <li data-i18n="tiers.bronze.b2">Uitnodiging Vrienden-avond</li>
+            <li data-i18n="tiers.bronze.b3">Je steunt direct de jeugdtrainers</li>
           </ul>
-          <a class="btn btn-outline btn-block" href="#contact" data-pakket="Brons / Vriend">Meer weten</a>
+          <a class="btn btn-outline btn-block" href="#contact" data-pakket="Brons / Vriend" data-i18n="tiers.cta">Meer weten</a>
         </article>
 
       </div>
@@ -242,21 +246,21 @@
   <!-- ============ IN BEELD ============ -->
   <section class="section section-alt" id="beeld">
     <div class="container">
-      <p class="eyebrow">De club in beeld</p>
-      <h2>AthenA op en naast het veld</h2>
-      <p class="section-intro">Een impressie van wedstrijddagen, jeugdopleiding en clubgevoel.</p>
+      <p class="eyebrow" data-i18n="gallery.eyebrow">De club in beeld</p>
+      <h2 data-i18n="gallery.heading">AthenA op en naast het veld</h2>
+      <p class="section-intro" data-i18n="gallery.intro">Een impressie van wedstrijddagen, jeugdopleiding en clubgevoel.</p>
 
       <div class="photo-grid" id="photoGrid" aria-live="polite"></div>
-      <p class="photo-credit" id="photoCredit" hidden>Fotografie: Robert Janssen Fotografie</p>
+      <p class="photo-credit" id="photoCredit" hidden data-i18n="gallery.credit">Fotografie: Robert Janssen Fotografie</p>
     </div>
   </section>
 
   <!-- ============ CONTACT ============ -->
   <section class="section" id="contact">
     <div class="container">
-      <p class="eyebrow">Word vriend</p>
-      <h2>Praat met ons over sponsoring</h2>
-      <p class="section-intro">Laat hieronder je gegevens achter en we nemen persoonlijk contact met je op.</p>
+      <p class="eyebrow" data-i18n="contact.eyebrow">Word vriend</p>
+      <h2 data-i18n="contact.heading">Praat met ons over sponsoring</h2>
+      <p class="section-intro" data-i18n="contact.intro">Laat hieronder je gegevens achter en we nemen persoonlijk contact met je op.</p>
 
       <div class="contact-grid">
         <form class="contact-form" id="sponsorForm" method="POST" action="https://formspree.io/f/REPLACE_WITH_FORMSPREE_ENDPOINT" novalidate>
@@ -265,64 +269,64 @@
           <input type="text" name="_gotcha" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
 
           <div class="form-row">
-            <label for="fldNaam">Naam <span aria-hidden="true">*</span></label>
+            <label for="fldNaam"><span data-i18n="form.name">Naam</span> <span aria-hidden="true">*</span></label>
             <input type="text" id="fldNaam" name="naam" required autocomplete="name">
           </div>
 
           <div class="form-row">
-            <label for="fldBedrijf">Bedrijf <span class="optional">(optioneel)</span></label>
+            <label for="fldBedrijf"><span data-i18n="form.company">Bedrijf</span> <span class="optional" data-i18n="form.optional">(optioneel)</span></label>
             <input type="text" id="fldBedrijf" name="bedrijf" autocomplete="organization">
           </div>
 
           <div class="form-row form-row-split">
             <div>
-              <label for="fldEmail">E-mail <span aria-hidden="true">*</span></label>
+              <label for="fldEmail"><span data-i18n="form.email">E-mail</span> <span aria-hidden="true">*</span></label>
               <input type="email" id="fldEmail" name="email" required autocomplete="email">
             </div>
             <div>
-              <label for="fldTelefoon">Telefoon <span class="optional">(optioneel)</span></label>
+              <label for="fldTelefoon"><span data-i18n="form.phone">Telefoon</span> <span class="optional" data-i18n="form.optional">(optioneel)</span></label>
               <input type="tel" id="fldTelefoon" name="telefoon" autocomplete="tel">
             </div>
           </div>
 
           <div class="form-row">
-            <label for="fldPakket">Interesse</label>
+            <label for="fldPakket" data-i18n="form.interest">Interesse</label>
             <select id="fldPakket" name="pakket">
-              <option value="Algemene vraag">Algemene vraag</option>
-              <option value="Hoofdsponsor">Hoofdsponsor</option>
-              <option value="Goud">Goud</option>
-              <option value="Zilver">Zilver</option>
-              <option value="Brons / Vriend">Brons / Vriend</option>
+              <option value="Algemene vraag" data-i18n="form.optGeneral">Algemene vraag</option>
+              <option value="Hoofdsponsor" data-i18n="tiers.main.name">Hoofdsponsor</option>
+              <option value="Goud" data-i18n="tiers.gold.name">Goud</option>
+              <option value="Zilver" data-i18n="tiers.silver.name">Zilver</option>
+              <option value="Brons / Vriend" data-i18n="tiers.bronze.name">Brons / Vriend</option>
             </select>
           </div>
 
           <div class="form-row">
-            <label for="fldBericht">Bericht</label>
+            <label for="fldBericht" data-i18n="form.message">Bericht</label>
             <textarea id="fldBericht" name="bericht" rows="4"></textarea>
           </div>
 
-          <button class="btn btn-primary btn-lg btn-block" type="submit">Verstuur aanvraag</button>
+          <button class="btn btn-primary btn-lg btn-block" type="submit" data-i18n="form.submit">Verstuur aanvraag</button>
 
           <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
 
-          <p class="form-fallback">Liever direct mailen? <a href="mailto:sponsors@hcathena.nl?subject=Sponsoraanvraag%20Vrienden%20van%20AthenA">sponsors@hcathena.nl</a></p>
+          <p class="form-fallback" data-i18n-html="form.fallback">Liever direct mailen? <a href="mailto:sponsors@hcathena.nl?subject=Sponsoraanvraag%20Vrienden%20van%20AthenA">sponsors@hcathena.nl</a></p>
         </form>
 
         <aside class="contact-info">
           <div class="contact-info-card">
-            <h3>Direct contact</h3>
+            <h3 data-i18n="contact.direct">Direct contact</h3>
             <p><a href="mailto:sponsors@hcathena.nl">sponsors@hcathena.nl</a></p>
-            <p class="muted">We reageren doorgaans binnen enkele werkdagen.</p>
+            <p class="muted" data-i18n="contact.responseTime">We reageren doorgaans binnen enkele werkdagen.</p>
           </div>
 
           <div class="contact-info-card">
-            <h3>Volg AthenA</h3>
+            <h3 data-i18n="contact.follow">Volg AthenA</h3>
             <!-- CLIENT: vul de juiste social links in -->
             <div class="social-links">
-              <a href="#" aria-label="AthenA op X (Twitter)"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.4 22H1.3l8.1-9.3L1 2h7l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"/></svg></a>
-              <a href="#" aria-label="AthenA op Facebook"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.16 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.78 8.44-4.94 8.44-9.94z"/></svg></a>
-              <a href="#" aria-label="AthenA op LinkedIn"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.35V21h3.96v-6.57c0-3.66 4.77-3.96 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.68-2.91V8.48z"/></svg></a>
-              <a href="#" aria-label="AthenA op Instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1"/></svg></a>
+              <a href="#" aria-label="AthenA op X (Twitter)" data-i18n-attr="aria-label:social.x"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.4 22H1.3l8.1-9.3L1 2h7l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"/></svg></a>
+              <a href="#" aria-label="AthenA op Facebook" data-i18n-attr="aria-label:social.facebook"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.16 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.78 8.44-4.94 8.44-9.94z"/></svg></a>
+              <a href="#" aria-label="AthenA op LinkedIn" data-i18n-attr="aria-label:social.linkedin"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.35V21h3.96v-6.57c0-3.66 4.77-3.96 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.68-2.91V8.48z"/></svg></a>
+              <a href="#" aria-label="AthenA op Instagram" data-i18n-attr="aria-label:social.instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1"/></svg></a>
             </div>
           </div>
         </aside>
@@ -334,20 +338,20 @@
   <section class="section section-dark" id="sponsorkit">
     <div class="container sponsorkit-inner">
       <div class="sponsorkit-text">
-        <p class="eyebrow eyebrow-light">Sponsorkit</p>
-        <h2>Deel AthenA verder</h2>
-        <p class="section-intro section-intro-light">Print de QR-code op flyers, banners of in het clubhuis — een scan brengt iedereen direct naar deze pagina.</p>
+        <p class="eyebrow eyebrow-light" data-i18n="kit.eyebrow">Sponsorkit</p>
+        <h2 data-i18n="kit.heading">Deel AthenA verder</h2>
+        <p class="section-intro section-intro-light" data-i18n="kit.intro">Print de QR-code op flyers, banners of in het clubhuis — een scan brengt iedereen direct naar deze pagina.</p>
         <div class="sponsorkit-downloads">
-          <a class="btn btn-outline-light" href="assets/downloads/vriendenvanathena-qr.svg" download>Download QR (SVG)</a>
-          <a class="btn btn-outline-light" href="assets/downloads/vriendenvanathena-qr.png" download>Download QR (PNG)</a>
-          <a class="btn btn-ghost-light" href="qr.html" target="_blank" rel="noopener">Print-vel openen</a>
+          <a class="btn btn-outline-light" href="assets/downloads/vriendenvanathena-qr.svg" download data-i18n="kit.downloadSvg">Download QR (SVG)</a>
+          <a class="btn btn-outline-light" href="assets/downloads/vriendenvanathena-qr.png" download data-i18n="kit.downloadPng">Download QR (PNG)</a>
+          <a class="btn btn-ghost-light" href="qr.html" target="_blank" rel="noopener" data-i18n="kit.printSheet">Print-vel openen</a>
         </div>
       </div>
       <div class="sponsorkit-qr">
         <div class="qr-frame">
           <div id="qrRender"></div>
         </div>
-        <p class="qr-caption">Scan om vriendenvanathena.nl te openen</p>
+        <p class="qr-caption" data-i18n="kit.qrCaption">Scan om vriendenvanathena.nl te openen</p>
       </div>
     </div>
   </section>
@@ -358,29 +362,30 @@
   <div class="container footer-inner">
     <div class="footer-brand">
       <img src="assets/img/athena-logo-horizontal-white.svg" alt="AthenA" class="footer-logo">
-      <p>Vrienden van AthenA — hét sponsornetwerk van Hockeyclub AthenA.</p>
+      <p data-i18n="footer.tagline">Vrienden van AthenA — hét sponsornetwerk van Hockeyclub AthenA.</p>
     </div>
 
-    <nav class="footer-nav" aria-label="Footer navigatie">
-      <a href="#over">Over ons</a>
-      <a href="#pakketten">Sponsorpakketten</a>
-      <a href="#beeld">In beeld</a>
-      <a href="#contact">Contact</a>
+    <nav class="footer-nav" aria-label="Footer navigatie" data-i18n-attr="aria-label:a11y.footerNav">
+      <a href="#over" data-i18n="nav.over">Over ons</a>
+      <a href="#pakketten" data-i18n="nav.pakketten">Sponsorpakketten</a>
+      <a href="#beeld" data-i18n="nav.beeld">In beeld</a>
+      <a href="#contact" data-i18n="footer.contact">Contact</a>
     </nav>
 
     <!-- CLIENT: vul de juiste social links in -->
     <div class="social-links social-links-footer">
-      <a href="#" aria-label="AthenA op X (Twitter)"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.4 22H1.3l8.1-9.3L1 2h7l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"/></svg></a>
-      <a href="#" aria-label="AthenA op Facebook"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.16 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.78 8.44-4.94 8.44-9.94z"/></svg></a>
-      <a href="#" aria-label="AthenA op LinkedIn"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.35V21h3.96v-6.57c0-3.66 4.77-3.96 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.68-2.91V8.48z"/></svg></a>
-      <a href="#" aria-label="AthenA op Instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1"/></svg></a>
+      <a href="#" aria-label="AthenA op X (Twitter)" data-i18n-attr="aria-label:social.x"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.4 22H1.3l8.1-9.3L1 2h7l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"/></svg></a>
+      <a href="#" aria-label="AthenA op Facebook" data-i18n-attr="aria-label:social.facebook"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.16 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.78 8.44-4.94 8.44-9.94z"/></svg></a>
+      <a href="#" aria-label="AthenA op LinkedIn" data-i18n-attr="aria-label:social.linkedin"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.35V21h3.96v-6.57c0-3.66 4.77-3.96 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.68-2.91V8.48z"/></svg></a>
+      <a href="#" aria-label="AthenA op Instagram" data-i18n-attr="aria-label:social.instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1"/></svg></a>
     </div>
   </div>
   <div class="footer-bottom">
-    <p>&copy; <span id="year">2026</span> Vrienden van AthenA. Onderdeel van Hockeyclub AthenA.</p>
+    <p><span data-i18n-html="footer.copyrightPre">&copy; </span><span id="year">2026</span><span data-i18n="footer.copyrightPost"> Vrienden van AthenA. Onderdeel van Hockeyclub AthenA.</span></p>
   </div>
 </footer>
 
+<script src="js/i18n.js" defer></script>
 <script src="js/qrcode.min.js" defer></script>
 <script src="js/hero.js" defer></script>
 <script src="js/main.js" defer></script>

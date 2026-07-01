@@ -138,6 +138,22 @@ button{ font-family: inherit; }
   display: none; flex-direction: column; justify-content: center; gap: 5px;
   width: 40px; height: 40px; border-radius: 8px; border: none; background: transparent; cursor: pointer;
 }
+.lang-toggle{
+  display: flex; align-items: center; gap: 2px;
+  background: rgba(255,255,255,.12); border-radius: 999px; padding: 3px;
+}
+.site-header.is-scrolled .lang-toggle{ background: var(--bg-alt); }
+.lang-btn{
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-head); font-weight: 700; font-size: .72rem; letter-spacing: .03em;
+  color: rgba(255,255,255,.65); padding: .35rem .6rem; border-radius: 999px;
+  transition: background-color .25s var(--ease), color .25s var(--ease);
+}
+.site-header.is-scrolled .lang-btn{ color: var(--grey); }
+.lang-btn.is-active{ background: var(--teal-deep); color: #fff; }
+.lang-btn:not(.is-active):hover{ color: #fff; }
+.site-header.is-scrolled .lang-btn:not(.is-active):hover{ color: var(--ink); }
+
 .nav-toggle span{ width: 22px; height: 2px; background: #fff; transition: transform .3s var(--ease), opacity .3s var(--ease), background-color .3s var(--ease); margin-inline: auto; }
 .site-header.is-scrolled .nav-toggle span{ background: var(--ink); }
 .nav-toggle[aria-expanded="true"] span:nth-child(1){ transform: translateY(7px) rotate(45deg); }

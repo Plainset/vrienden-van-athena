@@ -34,14 +34,19 @@ qr.html              Losse, printvriendelijke pagina met alleen de QR-code
 404.html             GitHub Pages foutpagina
 css/styles.css        Alle styling + design tokens (kleuren, typografie)
 css/print.css         Printstijlen voor qr.html
-js/hero.js            Hero-animatie: hockeystick+bal "slap-shot" die het logo laat inklappen, herhaalt elke keer je terugscrolt naar boven
+js/hero.js            Hero-animatie: een echte hockeystick-foto die uithaalt en de bal wegslaat, het logo klapt er bouncy in met confetti — herhaalt elke keer je terugscrolt naar boven
+js/i18n.js             NL/EN vertaalsysteem (NL is standaard); onthoudt de taalkeuze van de bezoeker
 js/main.js             Navigatie, formulier, fotogalerij, QR-render
 js/qrcode.min.js       Vendored QR-library (qrcodejs, MIT-licentie)
-assets/img/            Logo's en banner (officiële clubassets)
+assets/img/            Logo's, banner en de hockeystick-foto (officiële/gegenereerde clubassets)
 assets/photos/         19 wedstrijdfoto's (Robert Janssen Fotografie), genaamd 1.jpg t/m 19.jpg
 assets/downloads/       Kant-en-klare QR-bestanden (SVG + PNG) voor drukwerk
 assets/favicon/         Favicons, gegenereerd uit het clublogo
 ```
+
+## Taal (NL/EN)
+
+De site heeft een taalschakelaar rechtsboven in de header (NL/EN). Nederlands is en blijft de standaardtaal voor nieuwe bezoekers; de taalkeuze van een bezoeker wordt onthouden (localStorage) voor een volgend bezoek. Alle teksten — inclusief door JavaScript gegenereerde inhoud zoals formulierberichten en de fotogalerij-tegels — komen uit `js/i18n.js`. Nieuwe tekst toevoegen? Zet een `data-i18n="jouw.sleutel"` (of `data-i18n-html` voor tekst met opmaak) op het element in de HTML en vul de Nederlandse + Engelse waarde aan in `js/i18n.js`.
 
 ## Lokaal bekijken
 

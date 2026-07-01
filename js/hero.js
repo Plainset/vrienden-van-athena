@@ -1,12 +1,14 @@
 /*
-  Hero animation: "Slap-shot reveal"
-  - A hockey stick whips in and strikes a ball; the ball rockets across the
-    hero and "hits" the crest, which pops in with a bouncy overshoot and a
-    burst of confetti. Headline/sub/CTAs rise right after.
+  Hero animation: "Address, strike, reveal"
+  - POV beat: your own (real, photographed) hockey stick rests near a ball,
+    a brief "here's your gear" hold with a subtle handheld sway.
+  - Backswing + strike: the stick whips back and through, the ball rockets
+    across the hero and "hits" the crest, which pops in with a bouncy
+    overshoot and a confetti burst. Headline/sub/CTAs rise right after.
   - Ambient backdrop: slow diagonal turf-mow stripes + drifting hockey-ball
     flecks, running continuously (lightweight, always-on).
-  - The whole strike sequence REPLAYS every time the hero scrolls back into
-    view (with a short cooldown so it doesn't retrigger on tiny scroll jitter).
+  - The whole sequence REPLAYS every time the hero scrolls back into view
+    (with a short cooldown so it doesn't retrigger on tiny scroll jitter).
   - Respects prefers-reduced-motion and scales down on small/low-power devices.
   - Progressive enhancement: without this script the static HTML/CSS already
     shows the final state (full crest, headline, no motion) via .no-js.
@@ -45,22 +47,39 @@
 
   var CONFETTI_COLORS = ['#E11F2B', '#5FB8BE', '#ffffff', '#8fd8dc'];
 
+  // ---- real hockey stick image ----
+  var stickImg = new Image();
+  var stickReady = false;
+  stickImg.onload = function () { stickReady = true; };
+  stickImg.src = 'assets/img/hockey-stick.png';
+  // Measured from the source asset (667x900): grip tip + shaft direction,
+  // used to align the photo so it points "up" from the pivot before rotation.
+  var STICK_W = 667, STICK_H = 900;
+  var GRIP = { x: 29, y: 11 };
+  var SHAFT_ANGLE = 1.0517; // radians, atan2(dy,dx) of grip->blade direction in the photo
+  var GRIP_TO_TIP_PX = 1006; // pixel distance grip -> blade tip in the photo
+  var IMG_CORRECTION = -Math.PI / 2 - SHAFT_ANGLE;
+
   // ---- sequence state ----
-  var phase = 'idle'; // idle -> swing -> flight -> settled
+  var phase = 'address'; // address -> backswing -> strike -> flight -> settled
   var phaseStart = 0;
   var pivot = { x: 0, y: 0 };
   var target = { x: 0, y: 0 };
   var stickLen = 0;
-  var ballPos = { x: 0, y: 0 };
+  var stickDrawLen = 0;
   var ballTrail = [];
   var lastPlay = -Infinity;
   var COOLDOWN = 1000;
 
-  var RAISED_ANGLE = -1.05;   // radians, stick raised behind
-  var STRIKE_ANGLE = 0.42;    // radians, stick through the ball
-  var SWING_MS = 220;
+  var ADDRESS_ANGLE = 0.30;
+  var RAISED_ANGLE = -1.05;
+  var STRIKE_ANGLE = 0.42;
+  var ADDRESS_MS = 650;
+  var BACKSWING_MS = 130;
+  var STRIKE_MS = 150;
   var FLIGHT_MS = 340;
 
+  function easeInOutQuad(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
   function easeInQuad(x) { return x * x; }
   function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
 
@@ -74,9 +93,10 @@
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    pivot.x = W * 0.84;
-    pivot.y = H * 0.88;
-    stickLen = Math.max(90, Math.min(150, W * 0.13));
+    pivot.x = W * 0.82;
+    pivot.y = H * 0.92;
+    stickLen = Math.max(150, Math.min(260, W * 0.22));
+    stickDrawLen = stickLen * 1.5;
   }
 
   function initDots() {
@@ -114,7 +134,7 @@
     ctx.restore();
   }
 
-  function drawDots(t) {
+  function drawDots() {
     ctx.save();
     for (var i = 0; i < dots.length; i++) {
       var d = dots[i];
@@ -141,42 +161,63 @@
   }
 
   function stickAngleForPhase(elapsed) {
-    if (phase === 'swing') {
-      var p = Math.min(1, elapsed / SWING_MS);
-      return RAISED_ANGLE + (STRIKE_ANGLE - RAISED_ANGLE) * easeInQuad(p);
+    if (phase === 'address') {
+      // subtle handheld sway around the resting/address angle
+      return ADDRESS_ANGLE + Math.sin(elapsed / 260) * 0.025;
+    }
+    if (phase === 'backswing') {
+      var p1 = Math.min(1, elapsed / BACKSWING_MS);
+      return ADDRESS_ANGLE + (RAISED_ANGLE - ADDRESS_ANGLE) * easeInOutQuad(p1);
+    }
+    if (phase === 'strike') {
+      var p2 = Math.min(1, elapsed / STRIKE_MS);
+      return RAISED_ANGLE + (STRIKE_ANGLE - RAISED_ANGLE) * easeInQuad(p2);
     }
     return STRIKE_ANGLE;
   }
 
-  function drawStick(angle) {
+  function contactPoint(angle, factor) {
+    return {
+      x: pivot.x + Math.sin(angle) * stickLen * factor,
+      y: pivot.y - Math.cos(angle) * stickLen * factor
+    };
+  }
+
+  function drawStickImage(angle) {
+    if (!stickReady) return;
     var alpha = 1;
     if (phase === 'flight') {
       alpha = Math.max(0, 1 - (performance.now() - phaseStart) / (FLIGHT_MS * 0.6));
-    } else if (phase === 'settled' || phase === 'idle') {
+    } else if (phase === 'settled') {
       return;
     }
+    var imgScale = stickDrawLen / GRIP_TO_TIP_PX;
+
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.translate(pivot.x, pivot.y);
     ctx.rotate(angle);
+    ctx.rotate(IMG_CORRECTION);
+    ctx.translate(-GRIP.x * imgScale, -GRIP.y * imgScale);
+    ctx.drawImage(stickImg, 0, 0, STICK_W * imgScale, STICK_H * imgScale);
+    ctx.restore();
+  }
 
-    // shaft
-    ctx.strokeStyle = '#e7e9ea';
-    ctx.lineWidth = Math.max(5, stickLen * 0.055);
-    ctx.lineCap = 'round';
+  function drawBallAt(x, y, r) {
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -stickLen);
-    ctx.stroke();
-
-    // blade (hooked toe)
-    ctx.strokeStyle = '#E11F2B';
-    ctx.lineWidth = Math.max(6, stickLen * 0.07);
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = r * 1.2;
+    ctx.shadowOffsetY = r * 0.4;
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = 'rgba(7,28,107,0.4)';
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
-    ctx.moveTo(0, -stickLen);
-    ctx.quadraticCurveTo(stickLen * 0.16, -stickLen * 1.02, stickLen * 0.22, -stickLen * 0.9);
+    ctx.arc(x, y, r, 0.3, 2.6);
     ctx.stroke();
-
     ctx.restore();
   }
 
@@ -219,66 +260,61 @@
     ctx.restore();
   }
 
-  function drawBall(elapsed) {
-    if (phase === 'flight') {
-      var p = Math.min(1, elapsed / FLIGHT_MS);
-      var e = easeOutCubic(p);
-      var startX = pivot.x + Math.sin(STRIKE_ANGLE) * stickLen * 0.2;
-      var startY = pivot.y - Math.cos(STRIKE_ANGLE) * stickLen * 0.2;
-      var x = startX + (target.x - startX) * e;
-      var arc = Math.sin(p * Math.PI) * -H * 0.06;
-      var y = startY + (target.y - startY) * e + arc;
-      ballPos.x = x; ballPos.y = y;
+  function drawFlightBall(elapsed) {
+    var p = Math.min(1, elapsed / FLIGHT_MS);
+    var e = easeOutCubic(p);
+    var start = contactPoint(STRIKE_ANGLE, 0.92);
+    var x = start.x + (target.x - start.x) * e;
+    var arc = Math.sin(p * Math.PI) * -H * 0.06;
+    var y = start.y + (target.y - start.y) * e + arc;
 
-      ballTrail.push({ x: x, y: y });
-      if (ballTrail.length > 10) ballTrail.shift();
+    ballTrail.push({ x: x, y: y });
+    if (ballTrail.length > 10) ballTrail.shift();
 
-      ctx.save();
-      for (var i = 0; i < ballTrail.length; i++) {
-        var tpos = ballTrail[i];
-        ctx.globalAlpha = (i / ballTrail.length) * 0.35;
-        ctx.beginPath();
-        ctx.fillStyle = '#ffffff';
-        ctx.arc(tpos.x, tpos.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
+    ctx.save();
+    for (var i = 0; i < ballTrail.length; i++) {
+      var tpos = ballTrail[i];
+      ctx.globalAlpha = (i / ballTrail.length) * 0.35;
       ctx.beginPath();
       ctx.fillStyle = '#ffffff';
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.arc(tpos.x, tpos.y, 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(7,28,107,0.4)';
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.arc(x, y, 6, 0.3, 2.6);
-      ctx.stroke();
-      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    drawBallAt(x, y, 6);
 
-      if (p >= 1) {
-        phase = 'settled';
-        spawnConfetti(target.x, target.y, lowFi ? 14 : 26);
-        hero.classList.add('hero-anim');
-        if (crest) crest.classList.add('crest-pop');
-        ballTrail = [];
-      }
+    if (p >= 1) {
+      phase = 'settled';
+      spawnConfetti(target.x, target.y, lowFi ? 14 : 26);
+      hero.classList.add('hero-anim');
+      if (crest) crest.classList.add('crest-pop');
+      ballTrail = [];
     }
   }
 
   function tickSequence(now) {
     var elapsed = now - phaseStart;
-    if (phase === 'swing' && elapsed >= SWING_MS) {
-      phase = 'flight';
-      phaseStart = now;
-      spawnConfetti(
-        pivot.x + Math.sin(STRIKE_ANGLE) * stickLen * 0.2,
-        pivot.y - Math.cos(STRIKE_ANGLE) * stickLen * 0.2,
-        lowFi ? 5 : 9
-      );
-      elapsed = 0;
+
+    if (phase === 'address' && elapsed >= ADDRESS_MS) {
+      phase = 'backswing'; phaseStart = now; elapsed = 0;
+    } else if (phase === 'backswing' && elapsed >= BACKSWING_MS) {
+      phase = 'strike'; phaseStart = now; elapsed = 0;
+    } else if (phase === 'strike' && elapsed >= STRIKE_MS) {
+      phase = 'flight'; phaseStart = now; elapsed = 0;
+      var cp = contactPoint(STRIKE_ANGLE, 0.92);
+      spawnConfetti(cp.x, cp.y, lowFi ? 5 : 9);
     }
+
     var angle = stickAngleForPhase(elapsed);
-    drawStick(angle);
-    drawBall(elapsed);
+    drawStickImage(angle);
+
+    if (phase === 'address' || phase === 'backswing' || phase === 'strike') {
+      var restBall = contactPoint(STRIKE_ANGLE, 0.92);
+      drawBallAt(restBall.x, restBall.y, 6);
+    } else if (phase === 'flight') {
+      drawFlightBall(elapsed);
+    }
   }
 
   function frame(ts) {
@@ -288,8 +324,8 @@
 
     ctx.clearRect(0, 0, W, H);
     drawTurf(t);
-    drawDots(t);
-    if (phase === 'swing' || phase === 'flight') tickSequence(ts);
+    drawDots();
+    if (phase !== 'settled') tickSequence(ts);
     drawConfetti();
 
     rafId = requestAnimationFrame(frame);
@@ -298,7 +334,7 @@
   function play() {
     var now = performance.now();
     if (now - lastPlay < COOLDOWN) return;
-    if (phase === 'swing' || phase === 'flight') return;
+    if (phase !== 'idle' && phase !== 'settled') return;
     lastPlay = now;
 
     hero.classList.remove('hero-anim');
@@ -308,7 +344,7 @@
     void hero.offsetWidth;
 
     target = getTarget();
-    phase = 'swing';
+    phase = 'address';
     phaseStart = performance.now();
 
     if (!rafId) rafId = requestAnimationFrame(frame);
@@ -317,6 +353,8 @@
   resize();
   initDots();
   rafId = requestAnimationFrame(frame);
+  lastPlay = -Infinity;
+  phaseStart = performance.now();
 
   window.addEventListener('resize', function () {
     resize();
@@ -338,7 +376,5 @@
       });
     }, { threshold: [0, 0.45] });
     io.observe(hero);
-  } else {
-    play();
   }
 })();
