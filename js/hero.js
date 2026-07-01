@@ -103,13 +103,15 @@
   function drawSweep() {
     if (sweepProgress > 1.15) return;
     var x = W * sweepProgress;
-    var grad = ctx.createLinearGradient(x - 120, 0, x + 120, 0);
+    var grad = ctx.createLinearGradient(x - 100, 0, x + 100, 0);
     grad.addColorStop(0, 'rgba(95,184,190,0)');
-    grad.addColorStop(0.5, 'rgba(95,184,190,0.16)');
+    grad.addColorStop(0.46, 'rgba(95,184,190,0.12)');
+    grad.addColorStop(0.5, 'rgba(190,238,240,0.6)');
+    grad.addColorStop(0.54, 'rgba(95,184,190,0.12)');
     grad.addColorStop(1, 'rgba(95,184,190,0)');
     ctx.save();
     ctx.fillStyle = grad;
-    ctx.fillRect(x - 120, 0, 240, H);
+    ctx.fillRect(x - 100, 0, 200, H);
     ctx.restore();
   }
 
