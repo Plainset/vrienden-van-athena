@@ -14,7 +14,7 @@ Live: `https://plainset.github.io/vrienden-van-athena/` (of `vriendenvanathena.n
    - Zolang dit niet is ingesteld, opent de "Verstuur aanvraag"-knop automatisch een e-mail naar `sponsors@hcathena.nl` met de ingevulde gegevens — de site blijft dus altijd bruikbaar, ook vóór deze stap.
    - Gratis Formspree-tier: 50 inzendingen/maand, ruim voldoende voor een sponsorformulier.
 
-2. **Foto's toevoegen.** Zet foto's in `assets/photos/`, genaamd `1.jpg`, `2.jpg`, … `19.jpg`. Zodra er minimaal 1 foto staat, verschijnt automatisch de fotocredit "Robert Janssen Fotografie" onder de fotogalerij. Geen foto's? Dan toont de site nette gekleurde tegels in plaats van kapotte afbeeldingen — niets breekt.
+2. **Foto's.** ✅ Gedaan — 19 wedstrijdfoto's staan in `assets/photos/` (`1.jpg` t/m `19.jpg`), fotocredit "Robert Janssen Fotografie" staat eronder. Wil je foto's vervangen of toevoegen: zelfde bestandsnaam-conventie aanhouden. Zonder foto's in die map toont de site automatisch nette gekleurde tegels in plaats van kapotte afbeeldingen — niets breekt.
 
 3. **Sponsorpakketten controleren.** In `index.html`, sectie `#pakketten` (zoek naar `CLIENT: pas pakketnamen`), staan 4 voorgestelde pakketten (Hoofdsponsor / Goud / Zilver / Brons). Namen, prijzen ("Op aanvraag") en voordelen zijn een startpunt — pas aan naar wens.
 
@@ -34,11 +34,11 @@ qr.html              Losse, printvriendelijke pagina met alleen de QR-code
 404.html             GitHub Pages foutpagina
 css/styles.css        Alle styling + design tokens (kleuren, typografie)
 css/print.css         Printstijlen voor qr.html
-js/hero.js            Hero-animatie (canvas deeltjes + crest-reveal)
+js/hero.js            Hero-animatie: hockeystick+bal "slap-shot" die het logo laat inklappen, herhaalt elke keer je terugscrolt naar boven
 js/main.js             Navigatie, formulier, fotogalerij, QR-render
 js/qrcode.min.js       Vendored QR-library (qrcodejs, MIT-licentie)
 assets/img/            Logo's en banner (officiële clubassets)
-assets/photos/         Hier komen de wedstrijdfoto's (zie punt 2 hierboven)
+assets/photos/         19 wedstrijdfoto's (Robert Janssen Fotografie), genaamd 1.jpg t/m 19.jpg
 assets/downloads/       Kant-en-klare QR-bestanden (SVG + PNG) voor drukwerk
 assets/favicon/         Favicons, gegenereerd uit het clublogo
 ```
