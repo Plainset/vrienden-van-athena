@@ -206,6 +206,31 @@ button{ font-family: inherit; }
 @media (prefers-reduced-motion: reduce){
   .hero-photo.is-active{ animation: none; }
 }
+
+/* The film: four full-screen real match-photo frames, played like a title
+   sequence. All motion (push-ins, cuts, fades) is set inline by hero.js from
+   rAF timestamps, so nothing here animates on the CSS clock. */
+.hero-film{ position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+.hero-frame{
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; will-change: transform, opacity;
+}
+/* per-frame crop focus + zoom origin: keep the athlete and the ball centered
+   on every viewport, and push the camera toward the action, not the frame */
+.frame-ready{   object-position: 60% 40%; transform-origin: 60% 42%; }
+.frame-carry{   object-position: 50% 76%; transform-origin: 50% 55%; }
+.frame-strike{  object-position: 42% 92%; transform-origin: 36% 82%; }
+.frame-release{ object-position: 46% 40%; transform-origin: 46% 45%; }
+.no-js .hero-film{ display: none; }
+/* portrait phones: a landscape action photo can't keep both the head and the
+   ball — favour the stick-ball contact, the part that sells the strike */
+@media (max-width: 700px){
+  .frame-strike{ object-position: 32% 92%; transform-origin: 28% 85%; }
+}
+@media (prefers-reduced-motion: reduce){
+  .hero-film{ display: none; }
+}
+
 .hero-canvas{ position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero-vignette{
   position: absolute; inset: 0;
@@ -219,7 +244,11 @@ button{ font-family: inherit; }
   letter-spacing: .14em; text-transform: uppercase; color: var(--teal-deep);
   margin-bottom: .9rem;
 }
-.eyebrow-light{ color: var(--teal); text-shadow: 0 1px 12px rgba(0,0,0,.55); }
+.eyebrow-light{
+  color: var(--teal); text-shadow: 0 1px 12px rgba(0,0,0,.55);
+  /* hidden while the film plays; rises with the rest of the reveal */
+  opacity: 0; transform: translateY(18px);
+}
 
 .hero-crest{
   width: min(420px, 70vw); margin-bottom: 1.6rem;
@@ -257,12 +286,13 @@ button{ font-family: inherit; }
 }
 .hero-ctas{ display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; opacity: 0; transform: translateY(18px); }
 
+.hero-anim .eyebrow-light{ animation: heroRise .7s var(--ease) forwards; animation-delay: .04s; }
 .hero-anim .hero-title{ animation: heroRise .7s var(--ease) forwards; animation-delay: .1s; }
 .hero-anim .hero-sub{ animation: heroRise .7s var(--ease) forwards; animation-delay: .22s; }
 .hero-anim .hero-ctas{ animation: heroRise .7s var(--ease) forwards; animation-delay: .34s; }
-.no-js .hero-title, .no-js .hero-sub, .no-js .hero-ctas{ opacity: 1; transform: none; }
+.no-js .eyebrow-light, .no-js .hero-title, .no-js .hero-sub, .no-js .hero-ctas{ opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce){
-  .hero-title, .hero-sub, .hero-ctas{ opacity: 1 !important; transform: none !important; animation: none !important; }
+  .eyebrow-light, .hero-title, .hero-sub, .hero-ctas{ opacity: 1 !important; transform: none !important; animation: none !important; }
 }
 @keyframes heroRise{ to{ opacity: 1; transform: translateY(0); } }
 
