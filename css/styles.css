@@ -179,10 +179,11 @@ button{ font-family: inherit; }
 /* =========================================================
    Hero
    ========================================================= */
-/* Scroll runway: the hero stage stays pinned (sticky) while ~2.4 extra
-   screens of scroll scrub the tactics-board sequence in hero.js. Collapses
-   to a single static screen without JS or with reduced motion. */
-.hero-scroll{ height: 340vh; background: var(--hero-bg); }
+/* Scroll runway: the hero stage stays pinned (sticky) while ~1.44 extra
+   screens of scroll scrub the tactics-board sequence in hero.js (tightened
+   from 2.4 so the sequence plays ~40% faster per scroll). Collapses to a
+   single static screen without JS or with reduced motion. */
+.hero-scroll{ height: 244vh; background: var(--hero-bg); }
 .no-js .hero-scroll{ height: auto; }
 
 .hero{
