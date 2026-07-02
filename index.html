@@ -59,10 +59,10 @@
 <main id="main">
 
   <!-- ============ HERO ============ -->
-  <!-- Scroll-driven hero: hero.js pins the stage inside this tall runway and
-       scrubs the sequence from scroll progress — a coach's tactics board
-       draws an attack, the ball breaks out and bounces across the screen,
-       then the crest ending settles over the match photos. -->
+  <!-- Hero: hero.js auto-plays the tactics-board sequence on load (a coach's
+       board draws an attack, the ball breaks out and bounces across the
+       screen, then the crest ending settles over the match photos) and
+       replays it when the hero scrolls back into view. -->
   <div class="hero-scroll" id="home">
   <section class="hero">
     <div class="hero-photos" id="heroPhotos" aria-hidden="true">
@@ -150,11 +150,6 @@
         <a class="btn btn-ghost btn-lg" href="#over" data-i18n="hero.ctaSecondary">Ontdek waarom</a>
       </div>
     </div>
-
-    <p class="hero-scroll-hint" id="heroScrollHint" aria-hidden="true">
-      <span data-i18n="hero.scrollHint">Scroll om te spelen</span>
-      <span class="hint-chev"></span>
-    </p>
 
     <a class="scroll-cue" href="#over" aria-label="Scroll naar de volgende sectie" data-i18n-attr="aria-label:a11y.scrollCue">
       <span></span>

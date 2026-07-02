@@ -131,8 +131,6 @@
       'footer.copyrightPre': '© ',
       'footer.copyrightPost': ' Vrienden van AthenA. Onderdeel van Hockeyclub AthenA.',
 
-      'hero.scrollHint': 'Scroll om te spelen',
-
       'print.title': 'Print QR — Vrienden van AthenA',
       'print.hint': 'Scan de code met je telefooncamera om de Vrienden-pagina van Hockeyclub AthenA te openen.',
       'print.button': 'Print dit vel',
@@ -261,8 +259,6 @@
       'footer.contact': 'Contact',
       'footer.copyrightPre': '© ',
       'footer.copyrightPost': ' Vrienden van AthenA. Part of Hockeyclub AthenA.',
-
-      'hero.scrollHint': 'Scroll to play',
 
       'print.title': 'Print QR — Vrienden van AthenA',
       'print.hint': 'Scan the code with your phone camera to open the Friends page of Hockeyclub AthenA.',

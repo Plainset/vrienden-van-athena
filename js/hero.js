@@ -1,9 +1,8 @@
 /*
-  Hero: a scroll-driven "living tactics board".
+  Hero: a self-playing "living tactics board".
 
-  The hero stage is pinned (position: sticky) inside the tall .hero-scroll
-  runway; scroll progress 0..1 scrubs the whole sequence, so scrolling back
-  up rewinds it:
+  On load the sequence plays itself over ~6.5s, driven by a time clock
+  (progress 0..1). It replays whenever the hero scrolls back into view.
 
     Act 1 — the coach's board: the pitch draws itself line by line, player
             dots pop in, dashed arrows trace an attack and the ball follows
@@ -14,29 +13,27 @@
             crest pops with the headline rising over them.
 
   The board SVG is generated at runtime so the pitch geometry fits any
-  viewport. Scroll position is lerped in a single rAF loop and only
-  transforms, opacities and stroke-dashoffsets are touched per frame.
-  Without JS or with reduced motion the runway collapses via CSS and the
-  settled hero shows immediately.
+  viewport. Progress is advanced in a single rAF loop and only transforms,
+  opacities and stroke-dashoffsets are touched per frame; the loop pauses
+  cleanly in hidden tabs / off-screen and idles once the ending settles.
+  Without JS or with reduced motion the settled hero shows immediately.
 */
 (function () {
   document.documentElement.classList.remove('no-js');
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hero = document.querySelector('.hero');
-  var runway = document.querySelector('.hero-scroll');
   var canvas = document.getElementById('heroCanvas');
   var crest = document.getElementById('heroCrest');
   var boardHost = document.getElementById('heroBoard');
   var ballHost = document.getElementById('heroBall');
-  var hint = document.getElementById('heroScrollHint');
   var cue = document.querySelector('.scroll-cue');
 
-  if (!hero || !runway || !canvas || !boardHost || !ballHost) return;
+  if (!hero || !canvas || !boardHost || !ballHost) return;
 
   if (reduceMotion) {
-    // Static hero only — the runway collapses and the board hides via CSS,
-    // crest/headline show through the reduced-motion CSS rules.
+    // Static hero only — the board hides via CSS and the crest/headline show
+    // through the reduced-motion CSS rules.
     return;
   }
 
@@ -92,7 +89,6 @@
   /* ---------------- timeline (all in scroll progress p) ---------------- */
 
   var TL = {
-    hint: [0.01, 0.06],
     outline: [0.02, 0.13], center: [0.05, 0.12], l23: [0.08, 0.15],
     dArc: [0.10, 0.17], dotArc: [0.13, 0.18], spot: [0.155, 0.19], goal: [0.15, 0.20],
     dots: { a8: [0.18, 0.23], d2: [0.195, 0.245], a7: [0.21, 0.26], d1: [0.225, 0.275], a9: [0.24, 0.29], gk: [0.255, 0.305] },
@@ -480,7 +476,6 @@
     if (!board || !big) return;
     var b = board;
 
-    if (hint) hint.style.opacity = (1 - seg(p, TL.hint[0], TL.hint[1])).toFixed(3);
     if (cue) cue.style.opacity = seg(p, TL.cue[0], TL.cue[1]).toFixed(3);
 
     // act fades
@@ -584,10 +579,14 @@
     prevP = p;
   }
 
-  /* ---------------- scroll engine ---------------- */
+  /* ---------------- playback engine (time-driven) ---------------- */
 
-  var runwayTop = 0, maxScroll = 1;
-  var targetP = 0, smoothP = 0, lastApplied = -1;
+  var DURATION = 6500;         // full auto-play, ms
+  var REPLAY_COOLDOWN = 1200;  // guard against re-trigger jitter near the top
+
+  var p = 0, lastApplied = -1;
+  var playing = false;
+  var startTime = 0, lastPlay = -Infinity, lastTs = 0;
   var running = true, rafId = null;
 
   function resize() {
@@ -601,76 +600,88 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  function metrics() {
-    runwayTop = runway.getBoundingClientRect().top + window.scrollY;
-    maxScroll = Math.max(1, runway.offsetHeight - hero.offsetHeight);
+  function startPlay(now) {
+    if (now - lastPlay < REPLAY_COOLDOWN) return;
+    lastPlay = now;
+    resetReveal();
+    prevP = -1;
+    p = 0;
+    startTime = now;
+    lastTs = 0;      // don't count the idle gap before playback as a pause
+    playing = true;
+    lastApplied = -1;
+    if (!rafId) rafId = requestAnimationFrame(frame);
   }
 
-  function readScroll() {
-    targetP = clamp01((window.scrollY - runwayTop) / maxScroll);
-  }
-
-  function frame() {
+  function frame(ts) {
     if (!running) { rafId = null; return; }
-    rafId = requestAnimationFrame(frame);
 
-    // layout may not have been ready at init — retry
+    // layout may not have been ready at init — retry, then (re)build geometry
     if (W < 2 || H < 2) {
       resize();
-      if (W < 2 || H < 2) return;
+      if (W < 2 || H < 2) { rafId = requestAnimationFrame(frame); return; }
       buildBoard();
       buildBall();
-      metrics();
-      readScroll();
-      smoothP = targetP;
       lastApplied = -1;
+      if (playing) { startTime = ts; lastTs = 0; } // start the clock once we can draw
     }
 
-    smoothP += (targetP - smoothP) * 0.16;
-    if (Math.abs(targetP - smoothP) < 0.0006) smoothP = targetP;
-    if (smoothP !== lastApplied) {
-      apply(smoothP);
-      lastApplied = smoothP;
+    // rAF pauses in hidden tabs / off-screen heroes; treat a big gap as a pause
+    // (shift the clock) so playback resumes instead of jumping ahead.
+    if (playing && lastTs && ts - lastTs > 250) startTime += ts - lastTs;
+    lastTs = ts;
+
+    if (playing) {
+      p = clamp01((ts - startTime) / DURATION);
+      if (p >= 1) { p = 1; playing = false; }
+    }
+
+    if (p !== lastApplied) {
+      apply(p);
+      lastApplied = p;
     }
 
     ctx.clearRect(0, 0, W, H);
     if (confetti.length) drawConfetti();
-  }
 
-  window.addEventListener('scroll', readScroll, { passive: true });
+    // keep ticking while something is moving; otherwise idle until the next replay
+    if (playing || confetti.length) rafId = requestAnimationFrame(frame);
+    else rafId = null;
+  }
 
   var resizeTimer = null;
   window.addEventListener('resize', function () {
     resize();
-    metrics();
-    readScroll();
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
       resizeTimer = null;
-      // pitch geometry depends on the viewport — rebuild and resync
+      if (W < 2 || H < 2) return;
+      // pitch geometry depends on the viewport — rebuild and re-render the current frame
       buildBoard();
       buildBall();
       lastApplied = -1;
-      prevP = -1;
+      if (!rafId && running) rafId = requestAnimationFrame(frame);
     }, 150);
   }, { passive: true });
 
+  resize();
+  if (W >= 2 && H >= 2) { buildBoard(); buildBall(); apply(0); }
+
   if ('IntersectionObserver' in window) {
+    var wasVisibleEnough = false;
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        running = entry.intersectionRatio > 0;
-        if (running && !rafId) rafId = requestAnimationFrame(frame);
+        var ratio = entry.intersectionRatio;
+        running = ratio > 0;
+        // resume a paused loop (e.g. returning mid-confetti); replay is handled below
+        if (running && !rafId && (playing || confetti.length)) rafId = requestAnimationFrame(frame);
+        var vis = ratio >= 0.45;
+        if (vis && !wasVisibleEnough) startPlay(performance.now());
+        wasVisibleEnough = vis;
       });
-    }, { threshold: [0] });
+    }, { threshold: [0, 0.45] });
     io.observe(hero);
+  } else {
+    startPlay(performance.now());
   }
-
-  resize();
-  buildBoard();
-  buildBall();
-  metrics();
-  readScroll();
-  smoothP = targetP; // land mid-runway (reload, deep link) without replaying from 0
-  prevP = targetP;
-  rafId = requestAnimationFrame(frame);
 })();

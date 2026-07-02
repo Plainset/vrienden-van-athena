@@ -7,13 +7,12 @@
 
   /* ---------- Sticky header state ---------- */
   var header = document.getElementById('siteHeader');
-  var heroRunway = document.querySelector('.hero-scroll');
+  var heroSection = document.querySelector('.hero');
   function onScroll() {
     if (!header) return;
-    // stay transparent (white text) for the whole pinned hero runway; flip
-    // once the light content sections actually reach the header
-    var threshold = 40;
-    if (heroRunway) threshold = Math.max(40, heroRunway.offsetHeight - window.innerHeight * 0.12 - 68);
+    // transparent (white text) over the dark hero; flip solid as the light
+    // content scrolls up under the header
+    var threshold = heroSection ? Math.max(40, heroSection.offsetHeight - 120) : 40;
     if (window.scrollY > threshold) header.classList.add('is-scrolled');
     else header.classList.remove('is-scrolled');
   }
