@@ -1,8 +1,10 @@
 /*
   Hero: a self-playing "living tactics board".
 
-  On load the sequence plays itself over ~6.5s, driven by a time clock
-  (progress 0..1). It replays whenever the hero scrolls back into view.
+  On load the sequence plays itself over ~4.9s, driven by a time clock
+  (progress 0..1) whose phases are paced separately — the strategy build-up
+  is quick, the big ball's bounce keeps its slower, readable pace. It replays
+  whenever the hero scrolls back into view.
 
     Act 1 — the coach's board: the pitch draws itself line by line, player
             dots pop in, dashed arrows trace an attack and the ball follows
@@ -581,8 +583,30 @@
 
   /* ---------------- playback engine (time-driven) ---------------- */
 
-  var DURATION = 6500;         // full auto-play, ms
+  // The sequence plays on a time clock split into phases so each can be paced
+  // on its own: the strategy build-up (board drawing, passing move, shot) is
+  // quick, while the big ball's bounce keeps its original, more readable pace.
+  // Boundaries are in progress (p); BALL_MS / SETTLE_MS match the previous
+  // 6.5s-linear timing, so only the strategy got faster.
+  var SEG_BALL_START = 0.635;  // p where the board hands off to the big ball
+  var SEG_BALL_END = 0.87;     // p where the big ball finishes / the reveal begins
+  var STRAT_MS = 2500;         // strategy build-up, ms (sped up from ~4130)
+  var BALL_MS = 1528;          // big ball bounce, ms (unchanged pace)
+  var SETTLE_MS = 845;         // crest/photo settle, ms (unchanged pace)
+  var DURATION = STRAT_MS + BALL_MS + SETTLE_MS;
   var REPLAY_COOLDOWN = 1200;  // guard against re-trigger jitter near the top
+
+  // piecewise time -> progress: each phase advances p across its own p-range
+  // over its own real-time budget, so the ball's on-screen speed is preserved.
+  function progressFor(t) {
+    if (t <= 0) return 0;
+    if (t < STRAT_MS) return (t / STRAT_MS) * SEG_BALL_START;
+    t -= STRAT_MS;
+    if (t < BALL_MS) return SEG_BALL_START + (t / BALL_MS) * (SEG_BALL_END - SEG_BALL_START);
+    t -= BALL_MS;
+    if (t < SETTLE_MS) return SEG_BALL_END + (t / SETTLE_MS) * (1 - SEG_BALL_END);
+    return 1;
+  }
 
   var p = 0, lastApplied = -1;
   var playing = false;
@@ -632,8 +656,9 @@
     lastTs = ts;
 
     if (playing) {
-      p = clamp01((ts - startTime) / DURATION);
-      if (p >= 1) { p = 1; playing = false; }
+      var elapsed = ts - startTime;
+      p = progressFor(elapsed);
+      if (elapsed >= DURATION) { p = 1; playing = false; }
     }
 
     if (p !== lastApplied) {
