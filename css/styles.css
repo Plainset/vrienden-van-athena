@@ -200,11 +200,14 @@ button{ font-family: inherit; }
 html:not(.no-js) .hero-photos{ opacity: 0; }
 .hero-photo{
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-  opacity: 0; transform: scale(1);
+  opacity: 0;
   transition: opacity 1.8s ease-in-out;
+  /* the source photos are only 1000px wide; keep them at 1:1 cover (no zoom
+     magnification) and run an unsharp mask + micro-contrast so the upscale
+     reads crisper rather than soft */
+  filter: url(#photoSharpen) contrast(1.06) saturate(1.06);
 }
-.hero-photo.is-active{ opacity: 1; animation: heroKenBurns 9s ease-in-out forwards; }
-@keyframes heroKenBurns{ from{ transform: scale(1); } to{ transform: scale(1.09); } }
+.hero-photo.is-active{ opacity: 1; }
 .hero-photo-tint{
   position: absolute; inset: 0;
   background:
@@ -213,7 +216,6 @@ html:not(.no-js) .hero-photos{ opacity: 0; }
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce){
-  .hero-photo.is-active{ animation: none; }
   .hero-photos{ opacity: 1 !important; } /* settled hero shows the backdrop */
 }
 
