@@ -194,6 +194,10 @@ button{ font-family: inherit; }
   padding-top: 6rem;
 }
 .hero-photos{ position: absolute; inset: 0; overflow: hidden; }
+/* With JS the hero scene gates this backdrop in with the crest reveal (starts
+   hidden so the ball bounces over a clean dark stage); no-JS / reduced-motion
+   keep it visible since the settled hero shows immediately. */
+html:not(.no-js) .hero-photos{ opacity: 0; }
 .hero-photo{
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
   opacity: 0; transform: scale(1);
@@ -210,10 +214,12 @@ button{ font-family: inherit; }
 }
 @media (prefers-reduced-motion: reduce){
   .hero-photo.is-active{ animation: none; }
+  .hero-photos{ opacity: 1 !important; } /* settled hero shows the backdrop */
 }
 
-/* The tactics board (SVG injected by hero.js) and the break-out ball;
-   all motion is scrubbed from scroll progress via inline styles. */
+/* The tactics board (SVG injected by hero.js) and the break-out ball; all
+   motion is set from a time clock via inline styles. .hero-board is reused by
+   both the home ball stage and the lower #speelwijze tactics band. */
 .hero-board{ position: absolute; inset: 0; }
 .hero-board svg{ width: 100%; height: 100%; display: block; }
 .hero-ball{ position: absolute; inset: 0; pointer-events: none; opacity: 0; }
@@ -221,9 +227,9 @@ button{ font-family: inherit; }
 .hb-squash{ width: 100%; height: 100%; transform-origin: 50% 88%; }
 .hb-ball svg{ width: 100%; height: 100%; display: block; }
 
-.no-js .hero-board, .no-js .hero-ball{ display: none; }
+.no-js .hero-ball{ display: none; }
 @media (prefers-reduced-motion: reduce){
-  .hero-board, .hero-ball{ display: none; }
+  .hero-ball{ display: none; }
 }
 
 .hero-canvas{ position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -307,6 +313,24 @@ html:not(.no-js) .scroll-cue{ opacity: 0; }
 }
 @keyframes scrollCue{ 0%{ top: 8px; opacity: 1; } 70%{ top: 22px; opacity: 0; } 100%{ top: 22px; opacity: 0; } }
 @media (max-width: 640px){ .scroll-cue{ display: none; } }
+
+/* =========================================================
+   Playbook band — the tactics-board animation (hero.js)
+   ========================================================= */
+.playbook{ overflow: hidden; }
+.playbook-head{ text-align: center; margin-bottom: clamp(1.5rem, 4vw, 2.5rem); }
+.playbook-head .eyebrow{ color: var(--teal); }
+.playbook-stage{
+  position: relative;
+  width: 100%;
+  height: clamp(340px, 52vh, 560px);
+}
+.playbook-stage .hero-board,
+.playbook-stage .hero-canvas{ position: absolute; inset: 0; width: 100%; height: 100%; }
+/* purely decorative: with no JS or reduced motion there's no animation to
+   show, so drop the empty band entirely */
+.no-js .playbook{ display: none; }
+@media (prefers-reduced-motion: reduce){ .playbook{ display: none; } }
 
 /* =========================================================
    Section shells

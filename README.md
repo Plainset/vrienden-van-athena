@@ -34,7 +34,7 @@ qr.html              Losse, printvriendelijke pagina met alleen de QR-code
 404.html             GitHub Pages foutpagina
 css/styles.css        Alle styling + design tokens (kleuren, typografie)
 css/print.css         Printstijlen voor qr.html
-js/hero.js            Hero-animatie die automatisch afspeelt bij het laden (± 4,9 sec): een levend tactiekbord tekent zichzelf snel (veldlijnen, spelers, aanvalspijlen), de bal volgt de aanval het doel in, stuitert daarna in een rustiger tempo groot over het scherm en de sequentie eindigt in het clublogo met confetti boven de fotoachtergrond. Speelt opnieuw af zodra je terugscrolt naar boven; zonder JS of met 'verminderde beweging' toont de site direct de rustige eindversie
+js/hero.js            Twee zelfspelende hockey-animaties. (1) Home-hero (#home): één grote hockeybal stuitert over het scherm en de sequentie eindigt in het clublogo met confetti boven de fotoachtergrond — speelt bij het laden en opnieuw bij terugscrollen naar boven. (2) Speelwijze-band (#speelwijze, lager op de pagina): een tactiekbord dat zichzelf tekent (veldlijnen, spelers, aanvalspijlen) en de bal het doel in stuurt — speelt zodra de band in beeld scrollt. Beide draaien via dezelfde tijd-gestuurde 'scene'-speler; zonder JS of met 'verminderde beweging' toont de site de rustige eindversie en blijft de speelwijze-band verborgen
 js/i18n.js             NL/EN vertaalsysteem (NL is standaard); onthoudt de taalkeuze van de bezoeker
 js/main.js             Navigatie, formulier, fotogalerij, QR-render
 js/qrcode.min.js       Vendored QR-library (qrcodejs, MIT-licentie)

@@ -1,49 +1,47 @@
 /*
-  Hero: a self-playing "living tactics board".
+  Two self-playing hockey scenes, driven by time clocks (progress 0..1).
 
-  On load the sequence plays itself over ~4.9s, driven by a time clock
-  (progress 0..1) whose phases are paced separately — the strategy build-up
-  is quick, the big ball's bounce keeps its slower, readable pace. It replays
-  whenever the hero scrolls back into view.
+  1. Home hero (#home): one oversized field-hockey ball bounces and rolls
+     across the full-screen stage, then the crest ending settles — the crest
+     pops, the headline rises and the match-photo backdrop fades in. Plays on
+     load and replays whenever the hero scrolls back into view.
 
-    Act 1 — the coach's board: the pitch draws itself line by line, player
-            dots pop in, dashed arrows trace an attack and the ball follows
-            them into the goal (flash, net shake, a confetti tick).
-    Act 2 — the ball breaks out of the diagram: one oversized ball bounces
-            and rolls across the full screen while the board fades away.
-    Act 3 — the existing ending: the crossfading match photos return and the
-            crest pops with the headline rising over them.
+  2. Playbook band (#speelwijze, lower down): a coach's tactics board that
+     draws itself — the pitch lines, player dots and dashed attack arrows
+     appear and the ball follows the move into the goal with a flash. Plays
+     when the band scrolls into view and stays on the finished diagram.
 
-  The board SVG is generated at runtime so the pitch geometry fits any
-  viewport. Progress is advanced in a single rAF loop and only transforms,
-  opacities and stroke-dashoffsets are touched per frame; the loop pauses
-  cleanly in hidden tabs / off-screen and idles once the ending settles.
-  Without JS or with reduced motion the settled hero shows immediately.
+  Both run through one small "scene" player (a rAF clock with pause-gap
+  handling for hidden tabs / off-screen, plus an IntersectionObserver that
+  starts/replays the scene). All boards/balls are generated at runtime so the
+  geometry fits any viewport; only transforms, opacities and stroke offsets
+  are touched per frame. Without JS or with reduced motion the settled hero
+  shows and the playbook band is hidden via CSS.
 */
 (function () {
   document.documentElement.classList.remove('no-js');
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return; // static hero via CSS; playbook band hidden via CSS
+
+  // hero (home) elements
   var hero = document.querySelector('.hero');
-  var canvas = document.getElementById('heroCanvas');
+  var heroCanvas = document.getElementById('heroCanvas');
   var crest = document.getElementById('heroCrest');
-  var boardHost = document.getElementById('heroBoard');
   var ballHost = document.getElementById('heroBall');
+  var heroPhotos = document.getElementById('heroPhotos');
   var cue = document.querySelector('.scroll-cue');
 
-  if (!hero || !canvas || !boardHost || !ballHost) return;
+  // playbook (lower band) elements
+  var playStage = document.getElementById('playbookStage');
+  var playBoardHost = document.getElementById('playbookBoard');
+  var playCanvas = document.getElementById('playbookCanvas');
 
-  if (reduceMotion) {
-    // Static hero only — the board hides via CSS and the crest/headline show
-    // through the reduced-motion CSS rules.
-    return;
-  }
-
-  var ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  var lowFi = window.innerWidth < 768 || (navigator.hardwareConcurrency || 8) <= 4;
 
   /* ---- crossfading real match-photo backdrop (Ken Burns loop) ----
-     Runs underneath the board; visible once the sequence settles. */
+     Runs underneath the hero; the wrapper opacity is gated by the hero scene,
+     so it only shows once the sequence settles. */
   (function initHeroPhotos() {
     var photos = document.querySelectorAll('.hero-photo');
     if (photos.length < 2) return;
@@ -61,11 +59,6 @@
     }, 4500);
   })();
 
-  var lowFi = window.innerWidth < 768 || (navigator.hardwareConcurrency || 8) <= 4;
-  var dpr = lowFi ? 1 : Math.min(window.devicePixelRatio || 1, 2);
-
-  var W = 0, H = 0;
-
   /* ---------------- helpers ---------------- */
 
   function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
@@ -81,6 +74,7 @@
   }
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
+  var uid = 0;
   function el(name, attrs, parent) {
     var n = document.createElementNS(SVG_NS, name);
     for (var k in attrs) n.setAttribute(k, attrs[k]);
@@ -88,7 +82,48 @@
     return n;
   }
 
-  /* ---------------- timeline (all in scroll progress p) ---------------- */
+  /* ---------------- confetti (per scene) ---------------- */
+
+  var CONFETTI_COLORS = ['#E11F2B', '#5FB8BE', '#ffffff', '#8fd8dc'];
+
+  function spawnConfetti(arr, x, y, count) {
+    for (var i = 0; i < count; i++) {
+      var ang = Math.random() * Math.PI * 2;
+      var speed = 1.4 + Math.random() * 3.2;
+      arr.push({
+        x: x, y: y,
+        vx: Math.cos(ang) * speed,
+        vy: Math.sin(ang) * speed - 1,
+        g: 0.09,
+        life: 1,
+        decay: 0.014 + Math.random() * 0.012,
+        size: 2 + Math.random() * 3,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        rot: Math.random() * Math.PI
+      });
+    }
+  }
+
+  function drawConfetti(ctx, arr) {
+    for (var i = arr.length - 1; i >= 0; i--) {
+      var c = arr[i];
+      c.vy += c.g;
+      c.x += c.vx;
+      c.y += c.vy;
+      c.life -= c.decay;
+      c.rot += 0.12;
+      if (c.life <= 0) { arr.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, c.life);
+      ctx.translate(c.x, c.y);
+      ctx.rotate(c.rot);
+      ctx.fillStyle = c.color;
+      ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+      ctx.restore();
+    }
+  }
+
+  /* ---------------- timeline (board sub-phases, in board progress) ---------------- */
 
   var TL = {
     outline: [0.02, 0.13], center: [0.05, 0.12], l23: [0.08, 0.15],
@@ -101,27 +136,20 @@
     shot: [0.570, 0.588], streak: [0.570, 0.615],
     d1shift: [0.30, 0.40], d2close: [0.50, 0.58], dive: [0.575, 0.605],
     flash: [0.588, 0.66],
-    ballOut: [0.60, 0.64],
-    playFade: [0.63, 0.71],
-    big: [0.635, 0.87],
-    bgFade: [0.82, 0.905],
-    cue: [0.90, 0.97],
-    goalTick: 0.592,
-    reveal: 0.868, reset: 0.78
+    goalTick: 0.592
   };
+  // the board's whole draw-and-score plays across board progress [0, BOARD_SPAN]
+  var BOARD_SPAN = 0.66;
 
   /* ---------------- the tactics board (runtime-generated SVG) ---------------- */
 
-  var board = null;
-  var uid = 0;
-
-  function buildBoard() {
-    boardHost.innerHTML = '';
+  function buildBoard(host, W, H) {
+    host.innerHTML = '';
     var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', focusable: 'false' });
-    boardHost.appendChild(svg);
+    host.appendChild(svg);
     var defs = el('defs', {}, svg);
 
-    // turf: deep petrol wash with faint mowing bands, sits over the photos
+    // turf: deep petrol wash with faint mowing bands
     var bgId = 'hbBg' + (++uid);
     var grad = el('radialGradient', { id: bgId, cx: '50%', cy: '38%', r: '85%' }, defs);
     el('stop', { offset: '0', 'stop-color': '#10404a' }, grad);
@@ -265,7 +293,7 @@
     var ring1 = el('circle', { cx: flashPt.x, cy: flashPt.y, r: 0, fill: 'none', stroke: 'rgba(255,255,255,.8)', 'stroke-width': 2, opacity: 0 }, gPlay);
     var ring2 = el('circle', { cx: flashPt.x, cy: flashPt.y, r: 0, fill: 'none', stroke: 'rgba(143,216,220,.7)', 'stroke-width': 2, opacity: 0 }, gPlay);
 
-    board = {
+    return {
       svg: svg, gPlay: gPlay, gGoal: gGoal,
       outline: outline, center: center, l23: l23, dArc: dArc,
       dotArc: dotArc, spot: spot, rSpot: lineW * 2.2,
@@ -297,12 +325,99 @@
 
   function pathPoint(A, t) { return A.mpath.getPointAtLength(A.L * easeInOut(clamp01(t))); }
 
-  /* ---------------- the break-out ball (act 2, DOM) ---------------- */
+  // Render the board at board-progress gp (0..BOARD_SPAN). The diagram ball
+  // scores and STAYS (no fade-out to a break-out ball); goal confetti fires
+  // once on the forward crossing of the goal.
+  function renderBoard(b, gp, scene) {
+    // pitch draws itself
+    drawScrub(b.outline, seg(gp, TL.outline[0], TL.outline[1]));
+    drawScrub(b.center, seg(gp, TL.center[0], TL.center[1]));
+    drawScrub(b.l23, seg(gp, TL.l23[0], TL.l23[1]));
+    drawScrub(b.dArc, seg(gp, TL.dArc[0], TL.dArc[1]));
+    b.dotArc.setAttribute('opacity', (0.9 * seg(gp, TL.dotArc[0], TL.dotArc[1])).toFixed(3));
+    b.spot.setAttribute('r', Math.max(0, b.rSpot * easeOutBack(seg(gp, TL.spot[0], TL.spot[1]))));
+    b.gGoal.setAttribute('opacity', seg(gp, TL.goal[0], TL.goal[1]).toFixed(3));
 
-  var big = null;
+    // net shake on the goal
+    var tf = seg(gp, TL.flash[0], TL.flash[1]);
+    var shake = tf > 0 && tf < 1 ? Math.sin(tf * Math.PI * 7) * 4 * (1 - tf) : 0;
+    b.gGoal.setAttribute('transform', 'translate(' + shake.toFixed(2) + ',0)');
 
-  function buildBall() {
-    ballHost.innerHTML = '';
+    // players pop in, then live through the move
+    var carryT = seg(gp, TL.ball2[0], TL.ball2[1]);
+    for (var key in b.dots) {
+      var dot = b.dots[key];
+      var win = TL.dots[key];
+      var popT = seg(gp, win[0], win[1]);
+      var pos = { x: dot.base.x, y: dot.base.y };
+
+      if (key === 'a7') {
+        if (carryT >= 1) pos = b.pBend;
+        else if (carryT > 0) pos = pathPoint(b.arrow2, carryT);
+      } else if (key === 'a9') {
+        var runT = easeInOut(seg(gp, TL.run9[0], TL.run9[1]));
+        pos = { x: lerp(dot.base.x, b.a9end.x, runT), y: lerp(dot.base.y, b.a9end.y, runT) };
+      } else if (key === 'd1') {
+        pos = { x: dot.base.x + b.w * 0.05 * easeInOut(seg(gp, TL.d1shift[0], TL.d1shift[1])), y: dot.base.y };
+      } else if (key === 'd2') {
+        var cl = 0.35 * easeInOut(seg(gp, TL.d2close[0], TL.d2close[1]));
+        pos = { x: lerp(dot.base.x, b.pRec.x, cl), y: lerp(dot.base.y, b.pRec.y, cl) };
+      } else if (key === 'gk') {
+        pos = { x: dot.base.x + b.gw * 0.35 * easeOut(seg(gp, TL.dive[0], TL.dive[1])), y: dot.base.y };
+      }
+
+      var s = popT <= 0 ? 0.01 : easeOutBack(popT);
+      dot.el.setAttribute('transform', 'translate(' + pos.x.toFixed(1) + ',' + pos.y.toFixed(1) + ') scale(' + s.toFixed(3) + ')');
+      dot.el.setAttribute('opacity', Math.min(1, popT * 2.5).toFixed(3));
+    }
+
+    // arrows trace the move
+    arrowScrub(b.arrow1, seg(gp, TL.arrow1[0], TL.arrow1[1]));
+    arrowScrub(b.arrow2, seg(gp, TL.arrow2[0], TL.arrow2[1]));
+    arrowScrub(b.arrow3, seg(gp, TL.arrow3[0], TL.arrow3[1]));
+
+    // shot streak
+    var ts = seg(gp, TL.streak[0], TL.streak[1]);
+    b.streak.setAttribute('opacity', ts > 0 && ts < 1 ? (0.55 * Math.sin(ts * Math.PI)).toFixed(3) : '0');
+
+    // the diagram ball follows the move, then fires into the goal and stays
+    var bp;
+    if (gp < TL.ball1[0]) bp = b.pA;
+    else if (gp < TL.ball1[1]) bp = pathPoint(b.arrow1, seg(gp, TL.ball1[0], TL.ball1[1]));
+    else if (gp < TL.ball2[0]) bp = b.pB;
+    else if (gp < TL.ball2[1]) bp = pathPoint(b.arrow2, seg(gp, TL.ball2[0], TL.ball2[1]));
+    else if (gp < TL.ball3[0]) bp = b.pBend;
+    else if (gp < TL.ball3[1]) bp = pathPoint(b.arrow3, seg(gp, TL.ball3[0], TL.ball3[1]));
+    else if (gp < TL.shot[0]) bp = b.pRec;
+    else {
+      var sh = easeIn(seg(gp, TL.shot[0], TL.shot[1]));
+      bp = { x: lerp(b.pRec.x, b.shotTarget.x, sh), y: lerp(b.pRec.y, b.shotTarget.y, sh) };
+    }
+    b.ball.setAttribute('cx', bp.x.toFixed(1));
+    b.ball.setAttribute('cy', bp.y.toFixed(1));
+    b.ball.setAttribute('opacity', seg(gp, TL.ballIn[0], TL.ballIn[1]).toFixed(3));
+
+    // goal flash + rings
+    b.flash.setAttribute('opacity', tf > 0 && tf < 1 ? Math.sin(Math.min(tf * 1.4, 1) * Math.PI).toFixed(3) : '0');
+    var tr1 = easeOut(tf);
+    b.ring1.setAttribute('r', Math.max(0, b.gw * 0.4 + (b.ringMax - b.gw * 0.4) * tr1));
+    b.ring1.setAttribute('opacity', tf > 0 && tf < 1 ? (0.5 * (1 - tf)).toFixed(3) : '0');
+    var tf2 = seg(gp, TL.flash[0] + 0.015, TL.flash[1] + 0.02);
+    var tr2 = easeOut(tf2);
+    b.ring2.setAttribute('r', Math.max(0, b.gw * 0.4 + (b.ringMax - b.gw * 0.4) * tr2));
+    b.ring2.setAttribute('opacity', tf2 > 0 && tf2 < 1 ? (0.4 * (1 - tf2)).toFixed(3) : '0');
+
+    // confetti tick when the shot lands (only on the forward crossing)
+    if (scene.prevGp >= 0 && scene.prevGp < TL.goalTick && gp >= TL.goalTick) {
+      spawnConfetti(scene.confetti, b.flashPt.x, b.flashPt.y, lowFi ? 10 : 18);
+    }
+    scene.prevGp = gp;
+  }
+
+  /* ---------------- the break-out ball (home hero, DOM) ---------------- */
+
+  function buildBall(host, W, H) {
+    host.innerHTML = '';
     var R = Math.max(40, Math.min(90, H * 0.085));
     var shW = R * 2.9, shH = R * 0.62;
 
@@ -341,10 +456,10 @@
       '<circle cx="50" cy="50" r="47.5" fill="none" stroke="rgba(10,20,24,.22)" stroke-width="1.4"/>' +
       '</svg></div>';
 
-    ballHost.appendChild(shadow);
-    ballHost.appendChild(ballEl);
+    host.appendChild(shadow);
+    host.appendChild(ballEl);
 
-    big = {
+    return {
       R: R, shW: shW, shH: shH,
       ballEl: ballEl,
       squashEl: ballEl.firstChild,
@@ -361,10 +476,10 @@
     };
   }
 
-  function bigBall(p) {
-    var u = seg(p, TL.big[0], TL.big[1]);
-    if (u <= 0 || u >= 1) { ballHost.style.opacity = '0'; return; }
-    ballHost.style.opacity = '1';
+  // Render the big ball at traversal u (0..1 = off-screen left to off-screen right).
+  function renderBall(big, host, u, W, H) {
+    if (u <= 0 || u >= 1) { host.style.opacity = '0'; return; }
+    host.style.opacity = '1';
 
     var R = big.R;
     var x = lerp(-2.4 * R, W + 2.4 * R, u);
@@ -397,316 +512,178 @@
     big.shadowEl.style.opacity = (0.9 * (1 - 0.75 * nh)).toFixed(3);
   }
 
-  /* ---------------- confetti (goal tick + crest ending) ---------------- */
+  /* ---------------- generic time-driven scene player ---------------- */
 
-  var confetti = [];
-  var CONFETTI_COLORS = ['#E11F2B', '#5FB8BE', '#ffffff', '#8fd8dc'];
+  var REPLAY_COOLDOWN = 1200; // guard against re-trigger jitter
 
-  function spawnConfetti(x, y, count) {
-    for (var i = 0; i < count; i++) {
-      var ang = Math.random() * Math.PI * 2;
-      var speed = 1.4 + Math.random() * 3.2;
-      confetti.push({
-        x: x, y: y,
-        vx: Math.cos(ang) * speed,
-        vy: Math.sin(ang) * speed - 1,
-        g: 0.09,
-        life: 1,
-        decay: 0.014 + Math.random() * 0.012,
-        size: 2 + Math.random() * 3,
-        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-        rot: Math.random() * Math.PI
-      });
+  function makeScene(cfg) {
+    var host = cfg.el, canvas = cfg.canvas;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    var dpr = lowFi ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0;
+    var scene = { W: 0, H: 0, ctx: ctx, confetti: [], prevGp: -1, big: null, board: null };
+
+    var p = 0, lastApplied = -1, playing = false;
+    var startTime = 0, lastPlay = -Infinity, lastTs = 0;
+    var running = true, rafId = null;
+
+    function resize() {
+      var r = host.getBoundingClientRect();
+      W = r.width; H = r.height;
+      scene.W = W; scene.H = H;
+      canvas.width = Math.floor(W * dpr);
+      canvas.height = Math.floor(H * dpr);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function build() { cfg.build(scene, W, H); }
+
+    function startPlay(now) {
+      if (now - lastPlay < REPLAY_COOLDOWN) return;
+      lastPlay = now;
+      if (cfg.onReset) cfg.onReset(scene);
+      scene.prevGp = -1;
+      p = 0; startTime = now; lastTs = 0;
+      playing = true; lastApplied = -1;
+      if (!rafId) rafId = requestAnimationFrame(frame);
+    }
+
+    function frame(ts) {
+      if (!running) { rafId = null; return; }
+
+      // layout may not have been ready at init — retry, then (re)build geometry
+      if (W < 2 || H < 2) {
+        resize();
+        if (W < 2 || H < 2) { rafId = requestAnimationFrame(frame); return; }
+        build();
+        lastApplied = -1;
+        if (playing) { startTime = ts; lastTs = 0; } // start the clock once we can draw
+      }
+
+      // rAF pauses in hidden tabs / off-screen; treat a big gap as a pause
+      // (shift the clock) so playback resumes instead of jumping ahead.
+      if (playing && lastTs && ts - lastTs > 250) startTime += ts - lastTs;
+      lastTs = ts;
+
+      if (playing) {
+        var elapsed = ts - startTime;
+        p = clamp01(elapsed / cfg.duration);
+        if (elapsed >= cfg.duration) { p = 1; playing = false; }
+      }
+
+      if (p !== lastApplied) { cfg.apply(scene, p); lastApplied = p; }
+
+      ctx.clearRect(0, 0, W, H);
+      if (scene.confetti.length) drawConfetti(ctx, scene.confetti);
+
+      // keep ticking while something is moving; otherwise idle until the next replay
+      if (playing || scene.confetti.length) rafId = requestAnimationFrame(frame);
+      else rafId = null;
+    }
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      resize();
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        resizeTimer = null;
+        if (W < 2 || H < 2) return;
+        // geometry depends on the viewport — rebuild and re-render the current frame
+        build();
+        lastApplied = -1;
+        if (!rafId && running) rafId = requestAnimationFrame(frame);
+      }, 150);
+    }, { passive: true });
+
+    resize();
+    if (W >= 2 && H >= 2) { build(); cfg.apply(scene, 0); }
+
+    if ('IntersectionObserver' in window) {
+      var wasVisible = false;
+      var thr = cfg.threshold || 0.45;
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var ratio = entry.intersectionRatio;
+          running = ratio > 0;
+          // resume a paused loop (e.g. returning mid-confetti); replay handled below
+          if (running && !rafId && (playing || scene.confetti.length)) rafId = requestAnimationFrame(frame);
+          var vis = ratio >= thr;
+          if (vis && !wasVisible) startPlay(performance.now());
+          wasVisible = vis;
+        });
+      }, { threshold: [0, thr] });
+      io.observe(host);
+    } else {
+      startPlay(performance.now());
     }
   }
 
-  function drawConfetti() {
-    for (var i = confetti.length - 1; i >= 0; i--) {
-      var c = confetti[i];
-      c.vy += c.g;
-      c.x += c.vx;
-      c.y += c.vy;
-      c.life -= c.decay;
-      c.rot += 0.12;
-      if (c.life <= 0) { confetti.splice(i, 1); continue; }
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, c.life);
-      ctx.translate(c.x, c.y);
-      ctx.rotate(c.rot);
-      ctx.fillStyle = c.color;
-      ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
-      ctx.restore();
-    }
-  }
+  /* ---------------- scene 1: home hero (ball + crest reveal) ---------------- */
 
-  function getCrestTarget() {
-    if (!crest) return { x: W / 2, y: H * 0.4 };
-    var cr = crest.getBoundingClientRect();
-    var hr = hero.getBoundingClientRect();
+  // ball bounce keeps its previous pace; the settle follows it
+  var BALL_MS = 1528, SETTLE_MS = 845;
+  var HERO_MS = BALL_MS + SETTLE_MS;
+  var BALL_FRAC = BALL_MS / HERO_MS;      // ball phase as a fraction of the hero clock
+  var HERO_REVEAL = 0.60;                 // crest begins as the ball nears the exit
+  var HERO_RESET = 0.45;
+  var HERO_PHOTO = [0.55, 0.74];          // match-photo backdrop fades in with the reveal
+  var HERO_CUE = [0.80, 0.96];            // scroll cue appears once settled
+
+  var heroRevealFired = false;
+
+  function heroCrestTarget(scene) {
+    if (!crest) return { x: scene.W / 2, y: scene.H * 0.4 };
+    var cr = crest.getBoundingClientRect(), hr = hero.getBoundingClientRect();
     return { x: cr.left + cr.width / 2 - hr.left, y: cr.top + cr.height / 2 - hr.top };
   }
 
-  /* ---------------- ending reveal (existing crest sequence) ---------------- */
-
-  var revealFired = false;
-
-  function fireReveal() {
-    if (revealFired) return;
-    revealFired = true;
+  function heroFireReveal(scene) {
+    if (heroRevealFired) return;
+    heroRevealFired = true;
     hero.classList.add('hero-anim');
     if (crest) crest.classList.add('crest-pop');
-    var t = getCrestTarget();
-    spawnConfetti(t.x, t.y, lowFi ? 14 : 26);
+    var t = heroCrestTarget(scene);
+    spawnConfetti(scene.confetti, t.x, t.y, lowFi ? 14 : 26);
   }
 
-  function resetReveal() {
-    if (!revealFired) return;
-    revealFired = false;
+  function heroResetReveal() {
+    if (!heroRevealFired) return;
+    heroRevealFired = false;
     hero.classList.remove('hero-anim');
     if (crest) crest.classList.remove('crest-pop');
-    // force reflow so the CSS animations restart on the next reveal
-    // eslint-disable-next-line no-unused-expressions
-    void hero.offsetWidth;
+    void hero.offsetWidth; // reflow so the CSS animations restart on the next reveal
   }
 
-  /* ---------------- the master scrub ---------------- */
-
-  var prevP = -1;
-  var lastGoalBurst = -Infinity;
-
-  function apply(p) {
-    if (!board || !big) return;
-    var b = board;
-
-    if (cue) cue.style.opacity = seg(p, TL.cue[0], TL.cue[1]).toFixed(3);
-
-    // act fades
-    b.gPlay.setAttribute('opacity', (1 - seg(p, TL.playFade[0], TL.playFade[1])).toFixed(3));
-    boardHost.style.opacity = (1 - seg(p, TL.bgFade[0], TL.bgFade[1])).toFixed(3);
-
-    // pitch draws itself
-    drawScrub(b.outline, seg(p, TL.outline[0], TL.outline[1]));
-    drawScrub(b.center, seg(p, TL.center[0], TL.center[1]));
-    drawScrub(b.l23, seg(p, TL.l23[0], TL.l23[1]));
-    drawScrub(b.dArc, seg(p, TL.dArc[0], TL.dArc[1]));
-    b.dotArc.setAttribute('opacity', (0.9 * seg(p, TL.dotArc[0], TL.dotArc[1])).toFixed(3));
-    b.spot.setAttribute('r', Math.max(0, b.rSpot * easeOutBack(seg(p, TL.spot[0], TL.spot[1]))));
-    b.gGoal.setAttribute('opacity', seg(p, TL.goal[0], TL.goal[1]).toFixed(3));
-
-    // net shake on the goal
-    var tf = seg(p, TL.flash[0], TL.flash[1]);
-    var shake = tf > 0 && tf < 1 ? Math.sin(tf * Math.PI * 7) * 4 * (1 - tf) : 0;
-    b.gGoal.setAttribute('transform', 'translate(' + shake.toFixed(2) + ',0)');
-
-    // players pop in, then live through the move
-    var carryT = seg(p, TL.ball2[0], TL.ball2[1]);
-    for (var key in b.dots) {
-      var dot = b.dots[key];
-      var win = TL.dots[key];
-      var popT = seg(p, win[0], win[1]);
-      var pos = { x: dot.base.x, y: dot.base.y };
-
-      if (key === 'a7') {
-        if (carryT >= 1) pos = b.pBend;
-        else if (carryT > 0) pos = pathPoint(b.arrow2, carryT);
-      } else if (key === 'a9') {
-        var runT = easeInOut(seg(p, TL.run9[0], TL.run9[1]));
-        pos = { x: lerp(dot.base.x, b.a9end.x, runT), y: lerp(dot.base.y, b.a9end.y, runT) };
-      } else if (key === 'd1') {
-        pos = { x: dot.base.x + b.w * 0.05 * easeInOut(seg(p, TL.d1shift[0], TL.d1shift[1])), y: dot.base.y };
-      } else if (key === 'd2') {
-        var cl = 0.35 * easeInOut(seg(p, TL.d2close[0], TL.d2close[1]));
-        pos = { x: lerp(dot.base.x, b.pRec.x, cl), y: lerp(dot.base.y, b.pRec.y, cl) };
-      } else if (key === 'gk') {
-        pos = { x: dot.base.x + b.gw * 0.35 * easeOut(seg(p, TL.dive[0], TL.dive[1])), y: dot.base.y };
-      }
-
-      var s = popT <= 0 ? 0.01 : easeOutBack(popT);
-      dot.el.setAttribute('transform', 'translate(' + pos.x.toFixed(1) + ',' + pos.y.toFixed(1) + ') scale(' + s.toFixed(3) + ')');
-      dot.el.setAttribute('opacity', Math.min(1, popT * 2.5).toFixed(3));
-    }
-
-    // arrows trace the move
-    arrowScrub(b.arrow1, seg(p, TL.arrow1[0], TL.arrow1[1]));
-    arrowScrub(b.arrow2, seg(p, TL.arrow2[0], TL.arrow2[1]));
-    arrowScrub(b.arrow3, seg(p, TL.arrow3[0], TL.arrow3[1]));
-
-    // shot streak
-    var ts = seg(p, TL.streak[0], TL.streak[1]);
-    b.streak.setAttribute('opacity', ts > 0 && ts < 1 ? (0.55 * Math.sin(ts * Math.PI)).toFixed(3) : '0');
-
-    // the diagram ball follows the move, then fires into the goal
-    var bp;
-    if (p < TL.ball1[0]) bp = b.pA;
-    else if (p < TL.ball1[1]) bp = pathPoint(b.arrow1, seg(p, TL.ball1[0], TL.ball1[1]));
-    else if (p < TL.ball2[0]) bp = b.pB;
-    else if (p < TL.ball2[1]) bp = pathPoint(b.arrow2, seg(p, TL.ball2[0], TL.ball2[1]));
-    else if (p < TL.ball3[0]) bp = b.pBend;
-    else if (p < TL.ball3[1]) bp = pathPoint(b.arrow3, seg(p, TL.ball3[0], TL.ball3[1]));
-    else if (p < TL.shot[0]) bp = b.pRec;
-    else {
-      var sh = easeIn(seg(p, TL.shot[0], TL.shot[1]));
-      bp = { x: lerp(b.pRec.x, b.shotTarget.x, sh), y: lerp(b.pRec.y, b.shotTarget.y, sh) };
-    }
-    b.ball.setAttribute('cx', bp.x.toFixed(1));
-    b.ball.setAttribute('cy', bp.y.toFixed(1));
-    b.ball.setAttribute('opacity', (seg(p, TL.ballIn[0], TL.ballIn[1]) * (1 - seg(p, TL.ballOut[0], TL.ballOut[1]))).toFixed(3));
-
-    // goal flash + rings
-    b.flash.setAttribute('opacity', tf > 0 && tf < 1 ? Math.sin(Math.min(tf * 1.4, 1) * Math.PI).toFixed(3) : '0');
-    var tr1 = easeOut(tf);
-    b.ring1.setAttribute('r', Math.max(0, b.gw * 0.4 + (b.ringMax - b.gw * 0.4) * tr1));
-    b.ring1.setAttribute('opacity', tf > 0 && tf < 1 ? (0.5 * (1 - tf)).toFixed(3) : '0');
-    var tf2 = seg(p, TL.flash[0] + 0.015, TL.flash[1] + 0.02);
-    var tr2 = easeOut(tf2);
-    b.ring2.setAttribute('r', Math.max(0, b.gw * 0.4 + (b.ringMax - b.gw * 0.4) * tr2));
-    b.ring2.setAttribute('opacity', tf2 > 0 && tf2 < 1 ? (0.4 * (1 - tf2)).toFixed(3) : '0');
-
-    // confetti tick when the shot lands (only when scrolling forward)
-    if (prevP >= 0 && prevP < TL.goalTick && p >= TL.goalTick) {
-      var now = performance.now();
-      if (now - lastGoalBurst > 900) {
-        lastGoalBurst = now;
-        spawnConfetti(b.flashPt.x, b.flashPt.y, lowFi ? 10 : 18);
-      }
-    }
-
-    // act 2: the ball breaks out and crosses the screen
-    bigBall(p);
-
-    // act 3: the existing crest ending (with hysteresis so it can replay)
-    if (p >= TL.reveal) fireReveal();
-    else if (p < TL.reset) resetReveal();
-
-    prevP = p;
+  function heroApply(scene, hp) {
+    var u = clamp01(hp / BALL_FRAC);
+    if (scene.big) renderBall(scene.big, ballHost, u, scene.W, scene.H);
+    if (heroPhotos) heroPhotos.style.opacity = seg(hp, HERO_PHOTO[0], HERO_PHOTO[1]).toFixed(3);
+    if (cue) cue.style.opacity = seg(hp, HERO_CUE[0], HERO_CUE[1]).toFixed(3);
+    if (hp >= HERO_REVEAL) heroFireReveal(scene);
+    else if (hp < HERO_RESET) heroResetReveal();
   }
 
-  /* ---------------- playback engine (time-driven) ---------------- */
-
-  // The sequence plays on a time clock split into phases so each can be paced
-  // on its own: the strategy build-up (board drawing, passing move, shot) is
-  // quick, while the big ball's bounce keeps its original, more readable pace.
-  // Boundaries are in progress (p); BALL_MS / SETTLE_MS match the previous
-  // 6.5s-linear timing, so only the strategy got faster.
-  var SEG_BALL_START = 0.635;  // p where the board hands off to the big ball
-  var SEG_BALL_END = 0.87;     // p where the big ball finishes / the reveal begins
-  var STRAT_MS = 2500;         // strategy build-up, ms (sped up from ~4130)
-  var BALL_MS = 1528;          // big ball bounce, ms (unchanged pace)
-  var SETTLE_MS = 845;         // crest/photo settle, ms (unchanged pace)
-  var DURATION = STRAT_MS + BALL_MS + SETTLE_MS;
-  var REPLAY_COOLDOWN = 1200;  // guard against re-trigger jitter near the top
-
-  // piecewise time -> progress: each phase advances p across its own p-range
-  // over its own real-time budget, so the ball's on-screen speed is preserved.
-  function progressFor(t) {
-    if (t <= 0) return 0;
-    if (t < STRAT_MS) return (t / STRAT_MS) * SEG_BALL_START;
-    t -= STRAT_MS;
-    if (t < BALL_MS) return SEG_BALL_START + (t / BALL_MS) * (SEG_BALL_END - SEG_BALL_START);
-    t -= BALL_MS;
-    if (t < SETTLE_MS) return SEG_BALL_END + (t / SETTLE_MS) * (1 - SEG_BALL_END);
-    return 1;
+  if (hero && heroCanvas && ballHost) {
+    makeScene({
+      el: hero, canvas: heroCanvas, duration: HERO_MS, threshold: 0.45,
+      build: function (scene, W, H) { scene.big = buildBall(ballHost, W, H); },
+      onReset: function () { heroResetReveal(); },
+      apply: heroApply
+    });
   }
 
-  var p = 0, lastApplied = -1;
-  var playing = false;
-  var startTime = 0, lastPlay = -Infinity, lastTs = 0;
-  var running = true, rafId = null;
+  /* ---------------- scene 2: playbook band (tactics board) ---------------- */
 
-  function resize() {
-    var rect = hero.getBoundingClientRect();
-    W = rect.width;
-    H = rect.height;
-    canvas.width = Math.floor(W * dpr);
-    canvas.height = Math.floor(H * dpr);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
+  var BOARD_MS = 2600; // draws quickly, matching the previous strategy pace
 
-  function startPlay(now) {
-    if (now - lastPlay < REPLAY_COOLDOWN) return;
-    lastPlay = now;
-    resetReveal();
-    prevP = -1;
-    p = 0;
-    startTime = now;
-    lastTs = 0;      // don't count the idle gap before playback as a pause
-    playing = true;
-    lastApplied = -1;
-    if (!rafId) rafId = requestAnimationFrame(frame);
-  }
-
-  function frame(ts) {
-    if (!running) { rafId = null; return; }
-
-    // layout may not have been ready at init — retry, then (re)build geometry
-    if (W < 2 || H < 2) {
-      resize();
-      if (W < 2 || H < 2) { rafId = requestAnimationFrame(frame); return; }
-      buildBoard();
-      buildBall();
-      lastApplied = -1;
-      if (playing) { startTime = ts; lastTs = 0; } // start the clock once we can draw
-    }
-
-    // rAF pauses in hidden tabs / off-screen heroes; treat a big gap as a pause
-    // (shift the clock) so playback resumes instead of jumping ahead.
-    if (playing && lastTs && ts - lastTs > 250) startTime += ts - lastTs;
-    lastTs = ts;
-
-    if (playing) {
-      var elapsed = ts - startTime;
-      p = progressFor(elapsed);
-      if (elapsed >= DURATION) { p = 1; playing = false; }
-    }
-
-    if (p !== lastApplied) {
-      apply(p);
-      lastApplied = p;
-    }
-
-    ctx.clearRect(0, 0, W, H);
-    if (confetti.length) drawConfetti();
-
-    // keep ticking while something is moving; otherwise idle until the next replay
-    if (playing || confetti.length) rafId = requestAnimationFrame(frame);
-    else rafId = null;
-  }
-
-  var resizeTimer = null;
-  window.addEventListener('resize', function () {
-    resize();
-    if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () {
-      resizeTimer = null;
-      if (W < 2 || H < 2) return;
-      // pitch geometry depends on the viewport — rebuild and re-render the current frame
-      buildBoard();
-      buildBall();
-      lastApplied = -1;
-      if (!rafId && running) rafId = requestAnimationFrame(frame);
-    }, 150);
-  }, { passive: true });
-
-  resize();
-  if (W >= 2 && H >= 2) { buildBoard(); buildBall(); apply(0); }
-
-  if ('IntersectionObserver' in window) {
-    var wasVisibleEnough = false;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        var ratio = entry.intersectionRatio;
-        running = ratio > 0;
-        // resume a paused loop (e.g. returning mid-confetti); replay is handled below
-        if (running && !rafId && (playing || confetti.length)) rafId = requestAnimationFrame(frame);
-        var vis = ratio >= 0.45;
-        if (vis && !wasVisibleEnough) startPlay(performance.now());
-        wasVisibleEnough = vis;
-      });
-    }, { threshold: [0, 0.45] });
-    io.observe(hero);
-  } else {
-    startPlay(performance.now());
+  if (playStage && playCanvas && playBoardHost) {
+    makeScene({
+      el: playStage, canvas: playCanvas, duration: BOARD_MS, threshold: 0.35,
+      build: function (scene, W, H) { scene.board = buildBoard(playBoardHost, W, H); },
+      apply: function (scene, bp) { if (scene.board) renderBoard(scene.board, bp * BOARD_SPAN, scene); }
+    });
   }
 })();

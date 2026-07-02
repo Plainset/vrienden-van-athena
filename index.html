@@ -59,10 +59,10 @@
 <main id="main">
 
   <!-- ============ HERO ============ -->
-  <!-- Hero: hero.js auto-plays the tactics-board sequence on load (a coach's
-       board draws an attack, the ball breaks out and bounces across the
-       screen, then the crest ending settles over the match photos) and
-       replays it when the hero scrolls back into view. -->
+  <!-- Hero: hero.js auto-plays the ball animation on load (one big field-hockey
+       ball bounces across the stage, then the crest ending settles over the
+       match photos) and replays it when the hero scrolls back into view. The
+       tactics-board animation lives lower down in the #speelwijze band. -->
   <div class="hero-scroll" id="home">
   <section class="hero">
     <div class="hero-photos" id="heroPhotos" aria-hidden="true">
@@ -71,7 +71,6 @@
       <img class="hero-photo" src="assets/photos/10.jpg" alt="">
     </div>
     <div class="hero-photo-tint" aria-hidden="true"></div>
-    <div class="hero-board" id="heroBoard" aria-hidden="true"></div>
     <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
     <div class="hero-vignette" aria-hidden="true"></div>
     <div class="hero-ball" id="heroBall" aria-hidden="true"></div>
@@ -170,6 +169,21 @@
 
         <p class="prose-lead" data-i18n="about.lead">Samen bouwen we aan de toekomst van onze club.</p>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ SPEELWIJZE (tactiekbord-animatie) ============ -->
+  <!-- Decoratieve band: hero.js tekent hier het tactiekbord zodra de band in
+       beeld scrollt (en opnieuw bij elke terugkeer). Verborgen zonder JS /
+       bij 'verminderde beweging' via CSS. -->
+  <section class="section section-dark playbook" id="speelwijze">
+    <div class="container playbook-head">
+      <p class="eyebrow" data-i18n="playbook.eyebrow">Ons spel</p>
+      <h2 data-i18n="playbook.heading">Van opzet tot doelpunt</h2>
+    </div>
+    <div class="playbook-stage" id="playbookStage" aria-hidden="true">
+      <div class="hero-board" id="playbookBoard"></div>
+      <canvas class="hero-canvas" id="playbookCanvas"></canvas>
     </div>
   </section>
 

@@ -43,6 +43,9 @@
       'about.paragraph2': 'Als vriend van AthenA maak je deel uit van een ondernemend netwerk. Minstens één keer per jaar ontmoet je elkaar tijdens de inspirerende en gezellige <em>“Vrienden van AthenA”-avond</em>, met een interessante spreker en volop gelegenheid om te netwerken. Ook door het jaar heen weten vrienden en Atheners elkaar te vinden, langs de velden, bij activiteiten en daarbuiten.',
       'about.lead': 'Samen bouwen we aan de toekomst van onze club.',
 
+      'playbook.eyebrow': 'Ons spel',
+      'playbook.heading': 'Van opzet tot doelpunt',
+
       'stats.founded': 'Opgericht',
       'stats.rankNumber': '8<sup>e</sup>',
       'stats.rankLabel': 'Grootste hockeyclub van Nederland',
@@ -171,6 +174,9 @@
       'about.paragraph1': 'As you probably already know, AthenA was founded in 2004 and quickly grew into the eighth-largest hockey club in the Netherlands by membership. With both Ladies 1 and Men 1 in the Overgangsklasse, that’s a result we’re proud of as a young club. At the same time, we still see plenty of potential for further growth and development. A key focus area is attracting and retaining good (youth) coaches. To invest in this structurally, the support of committed sponsors is essential.',
       'about.paragraph2': 'As a friend of AthenA, you’re part of an entrepreneurial network. At least once a year you meet during the inspiring and sociable <em>“Friends of AthenA” evening</em>, with an interesting speaker and plenty of opportunity to network. Throughout the year, friends and Athenians also find each other pitch-side, at events and beyond.',
       'about.lead': 'Together we’re building the future of our club.',
+
+      'playbook.eyebrow': 'Our game',
+      'playbook.heading': 'From build-up to goal',
 
       'stats.founded': 'Founded',
       'stats.rankNumber': '8<sup>th</sup>',
