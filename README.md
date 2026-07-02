@@ -16,7 +16,7 @@ Live: `https://plainset.github.io/vrienden-van-athena/` (of `vriendenvanathena.n
 
 2. **Foto's.** ✅ Gedaan — 19 wedstrijdfoto's staan in `assets/photos/` (`1.jpg` t/m `19.jpg`), fotocredit "Robert Janssen Fotografie" staat eronder. Wil je foto's vervangen of toevoegen: zelfde bestandsnaam-conventie aanhouden. Zonder foto's in die map toont de site automatisch nette gekleurde tegels in plaats van kapotte afbeeldingen — niets breekt.
 
-3. **Sponsorpakketten controleren.** In `index.html`, sectie `#pakketten` (zoek naar `CLIENT: pas pakketnamen`), staan 4 voorgestelde pakketten (Hoofdsponsor / Goud / Zilver / Brons). Namen, prijzen ("Op aanvraag") en voordelen zijn een startpunt — pas aan naar wens.
+3. **Sponsoropties controleren.** In `index.html`, sectie `#pakketten`, staan de vijf opties uit de AthenA Sponsorkit 2025-2026 (Hoofdsponsor, Partnersponsor, Buurtsponsor, Maatwerk, Tenuesponsor) met de bijbehorende prijzen en voordelen. Namen, prijzen en teksten staan in `js/i18n.js` (sleutels `tiers.*`, zowel NL als EN) — werk deze bij zodra de sponsorkit wijzigt. Alle bedragen zijn excl. btw. Voeg je een optie toe/verwijder je er een? Pas ook de keuzelijst in het contactformulier aan (`<select id="fldPakket">`).
 
 4. **Social media links.** In `index.html` staan placeholder-links (`href="#"`) bij de social iconen in de contactsectie en de footer (zoek naar `CLIENT: vul de juiste social links in`). Vul de echte X/Facebook/LinkedIn/Instagram-URLs in.
 

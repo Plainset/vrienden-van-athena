@@ -374,6 +374,16 @@ html:not(.no-js) .scroll-cue{ opacity: 0; }
   border-color: var(--teal-deep); background: linear-gradient(160deg, #fff 0%, #f1fafb 100%);
   box-shadow: var(--shadow);
   position: relative;
+  grid-column: 1 / -1; /* the main sponsor is a full-width banner above the four options */
+}
+.tier-featured .tf-head h3{ font-size: 1.3rem; margin-bottom: .2rem; }
+/* on wider screens the main-sponsor banner lays out horizontally:
+   name/price (left) · benefits in two columns (centre) · CTA (right) */
+@media (min-width: 861px){
+  .tier-featured{ flex-direction: row; align-items: center; gap: 2.4rem; }
+  .tier-featured .tf-head{ flex: 0 0 clamp(190px, 24%, 280px); }
+  .tier-featured .tier-list{ flex: 1; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .7rem 2rem; }
+  .tier-featured .tf-cta{ flex: 0 0 auto; align-self: center; }
 }
 .tier-badge{
   position: absolute; top: -13px; left: 1.6rem;
